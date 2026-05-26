@@ -11,7 +11,7 @@ public class ArtNetSender : IDisposable
 
     public ArtNetSender(string ip, int universe = 0)
     {
-        _udp = new UdpClient();
+        _udp = new UdpClient { EnableBroadcast = true };
         _target = new IPEndPoint(IPAddress.Parse(ip), 6454);
         BuildHeader(universe);
     }
@@ -40,9 +40,9 @@ public class ArtNetSender : IDisposable
         {
             _udp.Send(Dmx, Dmx.Length, _target);
         }
-        catch (SocketException)
+        catch (SocketException ex)
         {
-            // TODO: Add error handling and retry logic
+            System.Diagnostics.Debug.WriteLine($"[ArtNet] Send failed: {ex.SocketErrorCode} — {ex.Message}");
         }
     }
 

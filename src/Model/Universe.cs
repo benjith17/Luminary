@@ -1,8 +1,9 @@
 namespace Model;
 
-public class Universe(byte number)
+public class Universe(byte number, string targetIp = "127.0.0.1")
 {
     public byte Number { get; init; } = number;
+    public string TargetIp { get; set; } = targetIp;
     public byte[] Channels { get; private set; } = new byte[512];
 
     public FixtureGroup[] Group { get; set; } = [];
