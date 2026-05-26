@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="Button-Bg" Color="{DynamicResource ThemeBg3}" />
+    <SolidColorBrush x:Key="Button-Hover" Color="{DynamicResource ThemeBg4}" />
+    <SolidColorBrush x:Key="Button-Pressed" Color="{DynamicResource ThemeBg2}" />
+
+    <SolidColorBrush x:Key="Splitter-Bg" Color="{DynamicResource ThemeBorder0}" />
+    <SolidColorBrush x:Key="Splitter-Hover" Color="{DynamicResource ThemeBorder1}" />
+    <SolidColorBrush x:Key="Splitter-Pressed" Color="{DynamicResource ThemeBorder2}" />
+
+    <SolidColorBrush x:Key="Panel-Bg" Color="{DynamicResource ThemeBg0}" />
+    <SolidColorBrush x:Key="PanelHeader-Bg" Color="{DynamicResource ThemeBg1}" />
+    <SolidColorBrush x:Key="ListItem-Bg" Color="{DynamicResource ThemeBg2}" />
+</ResourceDictionary>

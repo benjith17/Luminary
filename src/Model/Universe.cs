@@ -1,4 +1,4 @@
-namespace DMXUniverse;
+namespace Model;
 
 public class Universe(byte number)
 {

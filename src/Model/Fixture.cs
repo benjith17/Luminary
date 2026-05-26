@@ -1,4 +1,4 @@
-namespace DMXUniverse;
+namespace Model;
 
 public class Fixture(string name, ushort channel, FixtureDefinition fixtureType)
 {

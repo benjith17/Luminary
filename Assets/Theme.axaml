@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="ThemeBg0">#0D0D0F</Color>
+    <Color x:Key="ThemeBg1">#141417</Color>
+    <Color x:Key="ThemeBg2">#1C1C21</Color>
+    <Color x:Key="ThemeBg3">#242429</Color>
+    <Color x:Key="ThemeBg4">#2E2E35</Color>
+
+    <Color x:Key="ThemeBorder0">#222228</Color>
+    <Color x:Key="ThemeBorder1">#2E2E38</Color>
+    <Color x:Key="ThemeBorder2">#3E3E4A</Color>
+
+    <Color x:Key="ThemeText0">#F0F0F2</Color>
+    <Color x:Key="ThemeText1">#ADADB8</Color>
+    <Color x:Key="ThemeText2">#6B6B78</Color>
+
+    <Color x:Key="ThemeSuccess">#3A8C5C</Color>
+    <Color x:Key="ThemeWarning">#C47F1A</Color>
+    <Color x:Key="ThemeDanger">#B84040</Color>
+    <Color x:Key="ThemeInfo">#3C6FA8</Color>
+</ResourceDictionary>

@@ -1,4 +1,4 @@
-namespace DMXUniverse;
+namespace Model;
 
 public abstract class FixtureCapability(string name, int offset, byte defaultValue = 0)
 {

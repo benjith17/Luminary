@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace GUI.ViewModels;
+namespace ViewModel;
 
 public abstract class ViewModelBase : ObservableObject
 {

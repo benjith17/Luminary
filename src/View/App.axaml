@@ -1,0 +1,65 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="View.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Assets/Theme.axaml" />
+                <ResourceInclude Source="/Assets/Brushes.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Base style for all themed splitters -->
+        <Style Selector="GridSplitter.themed">
+            <Setter Property="Background" Value="{DynamicResource Splitter-Bg}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.02" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="GridSplitter.themed:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Splitter-Hover}" />
+        </Style>
+        <Style Selector="GridSplitter.themed:pressed">
+            <Setter Property="Background" Value="{DynamicResource Splitter-Pressed}" />
+        </Style>
+
+        <!-- Vertical splitter (between columns) -->
+        <Style Selector="GridSplitter.vertical">
+            <Setter Property="Width" Value="4" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="ResizeDirection" Value="Columns" />
+        </Style>
+
+        <!-- Horizontal splitter (between rows) -->
+        <Style Selector="GridSplitter.horizontal">
+            <Setter Property="Height" Value="4" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="ResizeDirection" Value="Rows" />
+        </Style>
+        
+        <Style Selector="Button.themed">
+            <Setter Property="Background" Value="{DynamicResource Button-Bg}" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.02" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.themed:pointerover">
+            <Setter Property="Background" Value="{DynamicResource Button-Hover}" />
+        </Style>
+        <Style Selector="Button.themed:pressed">
+            <Setter Property="Background" Value="{DynamicResource Button-Pressed}" />
+        </Style>
+
+        </Application.Styles>
+
+</Application>

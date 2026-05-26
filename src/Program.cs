@@ -1,6 +1,6 @@
 using Avalonia;
 using HotAvalonia;
-using GUI;
+using View;
 
 sealed class Program
 {
@@ -10,7 +10,7 @@ sealed class Program
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
-            .UseHotReload()        // <-- add this
+            // .UseHotReload()        // <-- add this
             .UsePlatformDetect()
 #if DEBUG
             .WithDeveloperTools()
