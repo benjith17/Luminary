@@ -20,28 +20,21 @@
     </Border>
 
     <!-- Fixtures list -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl ItemsSource="{Binding Fixtures}" Margin="0 4 0 4">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:FixtureListItemViewModel">
-            <Border Background="{DynamicResource ListItem-Bg}"
-                    CornerRadius="4"
-                    Margin="8 3 8 3"
-                    Padding="10 7">
-              <Grid ColumnDefinitions="*,Auto">
-
-                <TextBlock Grid.Column="0"
-                           Text="{Binding Name}"
-                           Foreground="{DynamicResource ThemeText0}"
-                           FontSize="12"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
+    <ListBox ItemsSource="{Binding Fixtures}"
+             SelectedItem="{Binding SelectedFixture}"
+             Background="Transparent"
+             BorderThickness="0"
+             Padding="0 4 0 4">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:FixtureListItemViewModel">
+          <TextBlock Text="{Binding Name}"
+                     Foreground="{DynamicResource ThemeText0}"
+                     FontSize="12"
+                     VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
 
   </DockPanel>
 </UserControl>

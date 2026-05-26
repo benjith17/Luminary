@@ -60,6 +60,25 @@
             <Setter Property="Background" Value="{DynamicResource Button-Pressed}" />
         </Style>
 
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="10 7" />
+            <Setter Property="Margin" Value="8 3" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{DynamicResource ListItem-Bg}" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource ListItem-Hover}" />
+        </Style>
+        <Style Selector="ListBoxItem:pressed /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource ListItem-Pressed}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource ListItem-Selected}" />
+        </Style>
+        <Style Selector="ListBoxItem:selected:pointerover /template/ Border#PART_LayoutRoot">
+            <Setter Property="Background" Value="{DynamicResource ListItem-Selected-Hover}" />
+        </Style>
+
         </Application.Styles>
 
 </Application>

@@ -12,4 +12,8 @@
     <SolidColorBrush x:Key="Panel-Bg" Color="{DynamicResource ThemeBg0}" />
     <SolidColorBrush x:Key="PanelHeader-Bg" Color="{DynamicResource ThemeBg1}" />
     <SolidColorBrush x:Key="ListItem-Bg" Color="{DynamicResource ThemeBg2}" />
+    <SolidColorBrush x:Key="ListItem-Hover" Color="{DynamicResource ThemeBg3}" />
+    <SolidColorBrush x:Key="ListItem-Pressed" Color="{DynamicResource ThemeBg4}" />
+    <SolidColorBrush x:Key="ListItem-Selected" Color="{DynamicResource ThemeBg4}" />
+    <SolidColorBrush x:Key="ListItem-Selected-Hover" Color="{DynamicResource ThemeBg4}" />
 </ResourceDictionary>
