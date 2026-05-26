@@ -63,14 +63,45 @@ public partial class MainWindowViewModel : ViewModelBase
             ]
         };
 
+        var movingHeadDef = new FixtureDefinition
+        {
+            Name = "Moving Head",
+            Capabilities =
+            [
+                new PanTiltCapability("Pan/Tilt", panOffset: 0, tiltOffset: 1),
+                new DimmerCapability("Dimmer", offset: 2),
+                new ColorCapability("Color", redOffset: 3, greenOffset: 4, blueOffset: 5),
+            ]
+        };
+
+        var encoreDef = new FixtureDefinition
+        {
+            Name = "Encore Strobe",
+            Capabilities =
+            [
+                new DimmerCapability("Strobe", offset: 0),
+                new DimmerFineCapability("Dimmer", offset: 1, fineOffset: 2),
+                new ColorCapability("Color", redOffset: 4, greenOffset: 5, blueOffset: 3),
+                new DimmerCapability("CTO", offset: 6),
+
+                new PanTiltFineCapability("Pan/Tilt",
+                    panOffset: 28, panFineOffset: 29, tiltOffset: 30, tiltFineOffset: 31,
+                    defaultPan: 32768, defaultTilt: 32768),
+
+                new DimmerCapability("Effect", offset: 33),
+            ]
+        };
+
         return new ShowService
         {
             Universes = [universe],
             Fixtures =
             [
-                new Fixture("Fixture 1", channel: 0,  dimmerDef)      { UniverseNumber = 1 },
-                new Fixture("Fixture 2", channel: 1,  rgbDef)         { UniverseNumber = 1 },
-                new Fixture("Fixture 3", channel: 10, bigTestLightDef) { UniverseNumber = 1 },
+                // new Fixture("Fixture 1", channel: 0,  dimmerDef)       { UniverseNumber = 1 },
+                // new Fixture("Fixture 2", channel: 1,  rgbDef)          { UniverseNumber = 1 },
+                // new Fixture("Fixture 3", channel: 10, bigTestLightDef) { UniverseNumber = 1 },
+                // new Fixture("Moving Head", channel: 26, movingHeadDef) { UniverseNumber = 1 },
+                new Fixture("Encore Strobe", channel: 0, encoreDef) { UniverseNumber = 1 },
             ]
         };
     }

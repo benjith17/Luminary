@@ -6,11 +6,20 @@
              x:DataType="vm:FixtureEditorViewModel">
 
   <UserControl.DataTemplates>
+    <DataTemplate x:DataType="vm:DimmerFineCapabilityViewModel">
+      <views:DimmerFineCapabilityEditor />
+    </DataTemplate>
     <DataTemplate x:DataType="vm:DimmerCapabilityViewModel">
       <views:DimmerCapabilityEditor />
     </DataTemplate>
     <DataTemplate x:DataType="vm:ColorCapabilityViewModel">
       <views:ColorCapabilityEditor />
+    </DataTemplate>
+    <DataTemplate x:DataType="vm:PanTiltCapabilityViewModel">
+      <views:PanTiltCapabilityEditor />
+    </DataTemplate>
+    <DataTemplate x:DataType="vm:PanTiltFineCapabilityViewModel">
+      <views:PanTiltFineCapabilityEditor />
     </DataTemplate>
   </UserControl.DataTemplates>
 

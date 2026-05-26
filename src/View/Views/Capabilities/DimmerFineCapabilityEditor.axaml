@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             x:Class="View.DimmerFineCapabilityEditor"
+             x:DataType="vm:DimmerFineCapabilityViewModel">
+
+  <Border Background="{DynamicResource ListItem-Bg}"
+          CornerRadius="6"
+          Padding="10 8"
+          Margin="0 4">
+    <Grid RowDefinitions="Auto,*">
+      <TextBlock Grid.Row="0"
+                 Text="{Binding Name}"
+                 Foreground="{DynamicResource ThemeText2}"
+                 FontSize="10"
+                 FontWeight="SemiBold"
+                 Margin="0 0 0 8" />
+      <Slider Grid.Row="1"
+              Orientation="Vertical"
+              Minimum="0" Maximum="65535"
+              Value="{Binding Value}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Stretch"
+              MinHeight="60" />
+    </Grid>
+  </Border>
+
+</UserControl>

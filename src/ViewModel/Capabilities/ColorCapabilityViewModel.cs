@@ -15,6 +15,9 @@ public partial class ColorCapabilityViewModel : CapabilityViewModelBase
         _capability = capability;
         _fixture = fixture;
         _showService = showService;
+        Red   = capability.Default;
+        Green = capability.DefaultGreen;
+        Blue  = capability.DefaultBlue;
     }
 
     [ObservableProperty]

@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             x:Class="View.PanTiltFineCapabilityEditor"
+             x:DataType="vm:PanTiltFineCapabilityViewModel">
+
+  <Border Background="{DynamicResource ListItem-Bg}"
+          CornerRadius="6"
+          Padding="10 8"
+          Margin="0 4">
+    <Grid RowDefinitions="Auto,*">
+
+      <TextBlock Grid.Row="0"
+                 Text="{Binding Name}"
+                 Foreground="{DynamicResource ThemeText2}"
+                 FontSize="10"
+                 FontWeight="SemiBold"
+                 Margin="0 0 0 8" />
+
+      <Border Grid.Row="1"
+              Name="Pad"
+              Background="{DynamicResource ThemeBg1}"
+              CornerRadius="4"
+              Width="110" Height="110"
+              Cursor="Cross"
+              ClipToBounds="True">
+        <Canvas>
+          <Ellipse Name="Dot"
+                   Width="10" Height="10"
+                   Fill="{DynamicResource ThemeText0}" />
+        </Canvas>
+      </Border>
+
+    </Grid>
+  </Border>
+
+</UserControl>

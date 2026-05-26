@@ -27,8 +27,11 @@ public partial class FixtureListItemViewModel : ViewModelBase
         FixtureCapability capability, Fixture fixture, ShowService showService) =>
         capability switch
         {
-            DimmerCapability d => new DimmerCapabilityViewModel(d, fixture, showService),
-            ColorCapability c  => new ColorCapabilityViewModel(c, fixture, showService),
+            DimmerFineCapability df     => new DimmerFineCapabilityViewModel(df, fixture, showService),
+            DimmerCapability d          => new DimmerCapabilityViewModel(d, fixture, showService),
+            ColorCapability c           => new ColorCapabilityViewModel(c, fixture, showService),
+            PanTiltFineCapability ptf   => new PanTiltFineCapabilityViewModel(ptf, fixture, showService),
+            PanTiltCapability pt        => new PanTiltCapabilityViewModel(pt, fixture, showService),
             _ => throw new NotSupportedException($"No editor for capability type {capability.GetType().Name}")
         };
 }
