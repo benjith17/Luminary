@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             x:Class="View.DimmerCapabilityEditor"
+             x:DataType="vm:DimmerCapabilityViewModel">
+
+  <StackPanel Spacing="6">
+    <TextBlock Text="{Binding Name}"
+               Foreground="{DynamicResource ThemeText1}"
+               FontSize="11" />
+    <Slider Minimum="0" Maximum="255"
+            Value="{Binding Value}" />
+  </StackPanel>
+
+</UserControl>

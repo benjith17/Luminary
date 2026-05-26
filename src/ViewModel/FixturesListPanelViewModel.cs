@@ -1,21 +1,15 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Model;
 
 namespace ViewModel;
 
-public partial class FixturesListPanelViewModel : ViewModelBase
+public partial class FixturesListPanelViewModel(ShowService showService) : ViewModelBase
 {
     [ObservableProperty]
     public partial FixtureListItemViewModel? SelectedFixture { get; set; }
 
-    [ObservableProperty]
-    private List<FixtureListItemViewModel> _fixtures = [
-        new FixtureListItemViewModel("Fixture 1"),
-        new FixtureListItemViewModel("Fixture 2"),
-        new FixtureListItemViewModel("Fixture 3"),
-    ];
-
-    public FixturesListPanelViewModel()
-    {
-        SelectedFixture = Fixtures.FirstOrDefault();
-    }
+    public ObservableCollection<FixtureListItemViewModel> Fixtures { get; } = new(
+        showService.Fixtures.Select(f => new FixtureListItemViewModel(f, showService))
+    );
 }

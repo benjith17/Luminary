@@ -1,9 +1,10 @@
 namespace Model;
 
-public class Fixture(string name, ushort channel, FixtureDefinition fixtureType)
+public class Fixture(string name, int channel, FixtureDefinition fixtureType)
 {
     public string Name { get; set; } = name;
-    public ushort Channel { get; set; } = channel;
+    public byte UniverseNumber { get; set; }
+    public int Channel { get; set; } = channel;
 
     public FixtureDefinition FixtureType { get; init; } = fixtureType;
 

@@ -1,8 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ViewModel"
+             xmlns:views="clr-namespace:View"
              x:Class="View.FixtureEditor"
              x:DataType="vm:FixtureEditorViewModel">
+
+  <UserControl.DataTemplates>
+    <DataTemplate x:DataType="vm:DimmerCapabilityViewModel">
+      <views:DimmerCapabilityEditor />
+    </DataTemplate>
+    <DataTemplate x:DataType="vm:ColorCapabilityViewModel">
+      <views:ColorCapabilityEditor />
+    </DataTemplate>
+  </UserControl.DataTemplates>
 
   <DockPanel>
 
@@ -12,26 +22,19 @@
             Padding="12 9"
             BorderThickness="0 0 0 1"
             BorderBrush="{DynamicResource ThemeBorder0}">
-      <TextBlock Text="Fixture Editor"
+      <TextBlock Text="{Binding SelectedFixture.Name, FallbackValue='Fixture Editor'}"
                  Foreground="{DynamicResource ThemeText0}"
                  FontSize="12"
                  FontWeight="SemiBold"
                  VerticalAlignment="Center" />
     </Border>
 
-    <!-- Fixtures Editor -->
-    
-    <Border DockPanel.Dock="Top"
-            Padding="12 9"
-            BorderThickness="0 0 0 1"
-            BorderBrush="{DynamicResource ThemeBorder0}">
-      <StackPanel Orientation="Horizontal" Spacing="8">
-        <TextBlock Text="{Binding SelectedFixture.Name, FallbackValue='No fixture selected'}"
-                   Foreground="{DynamicResource ThemeText0}"
-                   FontSize="12"
-                   VerticalAlignment="Center" />
-      </StackPanel>
-    </Border>
+    <!-- Capability editors -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding SelectedFixture.Capabilities}"
+                    Margin="12 8" />
+    </ScrollViewer>
+
   </DockPanel>
 
 </UserControl>
