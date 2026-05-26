@@ -40,6 +40,20 @@ public partial class MainWindowViewModel : ViewModelBase
             Capabilities = [new ColorCapability("Color", redOffset: 0, greenOffset: 1, blueOffset: 2)]
         };
 
+        var bigTestLightDef = new FixtureDefinition
+        {
+            Name = "Big Test Light",
+            Capabilities =
+            [
+                new DimmerCapability("Dimmer", offset: 0),
+                new ColorCapability("Color", redOffset: 1, greenOffset: 2, blueOffset: 3),
+                new ColorCapability("Color", redOffset: 4, greenOffset: 5, blueOffset: 6),
+                new ColorCapability("Color", redOffset: 7, greenOffset: 8, blueOffset: 9),
+                new ColorCapability("Color", redOffset: 10, greenOffset: 11, blueOffset: 12),
+                new ColorCapability("Color", redOffset: 13, greenOffset: 14, blueOffset: 15),
+            ]
+        };
+
         return new ShowService
         {
             Universes = [universe],
@@ -47,7 +61,7 @@ public partial class MainWindowViewModel : ViewModelBase
             [
                 new Fixture("Fixture 1", channel: 0,  dimmerDef) { UniverseNumber = 1 },
                 new Fixture("Fixture 2", channel: 1,  rgbDef)    { UniverseNumber = 1 },
-                new Fixture("Fixture 3", channel: 10, dimmerDef) { UniverseNumber = 1 },
+                new Fixture("Fixture 3", channel: 10, bigTestLightDef) { UniverseNumber = 1 },
             ]
         };
     }

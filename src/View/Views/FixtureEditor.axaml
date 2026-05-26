@@ -29,11 +29,36 @@
                  VerticalAlignment="Center" />
     </Border>
 
-    <!-- Capability editors -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl ItemsSource="{Binding SelectedFixture.Capabilities}"
-                    Margin="12 8" />
-    </ScrollViewer>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="4" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <!-- Capability editors -->
+      <ScrollViewer Grid.Row="0"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding SelectedFixture.Capabilities}"
+                      Margin="12 8">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+      </ScrollViewer>
+
+      <GridSplitter Classes="themed horizontal" Grid.Row="1" />
+
+      <!-- Effects -->
+      <Border Grid.Row="2"
+              BorderThickness="0 1 0 0"
+              BorderBrush="{DynamicResource ThemeBorder0}">
+      </Border>
+
+    </Grid>
 
   </DockPanel>
 

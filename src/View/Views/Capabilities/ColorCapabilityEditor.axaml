@@ -4,13 +4,35 @@
              x:Class="View.ColorCapabilityEditor"
              x:DataType="vm:ColorCapabilityViewModel">
 
-  <StackPanel Spacing="6">
-    <TextBlock Text="{Binding Name}"
-               Foreground="{DynamicResource ThemeText1}"
-               FontSize="11" />
-    <Slider Minimum="0" Maximum="255" Value="{Binding Red}" />
-    <Slider Minimum="0" Maximum="255" Value="{Binding Green}" />
-    <Slider Minimum="0" Maximum="255" Value="{Binding Blue}" />
-  </StackPanel>
+  <Border Background="{DynamicResource ListItem-Bg}"
+          CornerRadius="6"
+          Padding="10 8"
+          Margin="0 4">
+    <Grid RowDefinitions="Auto,*">
+      <TextBlock Grid.Row="0"
+                 Text="{Binding Name}"
+                 Foreground="{DynamicResource ThemeText2}"
+                 FontSize="10"
+                 FontWeight="SemiBold"
+                 Margin="0 0 0 8" />
+      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+        <Grid RowDefinitions="*,Auto">
+          <Slider Grid.Row="0" Orientation="Vertical" Minimum="0" Maximum="255" Value="{Binding Red}"
+                  VerticalAlignment="Stretch" MinHeight="60" />
+          <TextBlock Grid.Row="1" Text="R" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" />
+        </Grid>
+        <Grid RowDefinitions="*,Auto">
+          <Slider Grid.Row="0" Orientation="Vertical" Minimum="0" Maximum="255" Value="{Binding Green}"
+                  VerticalAlignment="Stretch" MinHeight="60" />
+          <TextBlock Grid.Row="1" Text="G" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" />
+        </Grid>
+        <Grid RowDefinitions="*,Auto">
+          <Slider Grid.Row="0" Orientation="Vertical" Minimum="0" Maximum="255" Value="{Binding Blue}"
+                  VerticalAlignment="Stretch" MinHeight="60" />
+          <TextBlock Grid.Row="1" Text="B" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" />
+        </Grid>
+      </StackPanel>
+    </Grid>
+  </Border>
 
 </UserControl>
