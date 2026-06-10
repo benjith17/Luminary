@@ -30,4 +30,7 @@ public partial class PanTiltCapabilityViewModel : CapabilityViewModelBase
 
     partial void OnTiltChanged(byte value) =>
         _showService.GetUniverse(_fixture.UniverseNumber)?.Set(_fixture.Channel + _capability.TiltOffset, value);
+
+    public override byte[] Capture() => [Pan, Tilt];
+    public override void Restore(byte[] values) { Pan = values[0]; Tilt = values[1]; }
 }

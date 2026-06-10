@@ -27,4 +27,7 @@ public partial class DimmerFineCapabilityViewModel : CapabilityViewModelBase
         universe?.Set(_fixture.Channel + _capability.Offset,     (byte)(value >> 8));
         universe?.Set(_fixture.Channel + _capability.FineOffset, (byte)(value & 0xFF));
     }
+
+    public override byte[] Capture() => [(byte)(Value >> 8), (byte)(Value & 0xFF)];
+    public override void Restore(byte[] values) => Value = (ushort)((values[0] << 8) | values[1]);
 }

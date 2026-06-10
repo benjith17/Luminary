@@ -11,6 +11,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public EffectsPanelViewModel EffectsPanel { get; } = new();
     public FixturesListPanelViewModel FixturesListPanel { get; }
     public FixtureEditorViewModel FixtureEditor { get; } = new();
+    public CueListPanelViewModel CueListPanel { get; }
 
     public MainWindowViewModel()
     {
@@ -18,6 +19,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
         FixturesListPanel = new(show);
         FixturesListPanel.SelectedFixture = FixturesListPanel.Fixtures.FirstOrDefault();
+        CueListPanel = new(show, FixturesListPanel);
 
         FixturesListPanel.PropertyChanged += (_, e) =>
         {

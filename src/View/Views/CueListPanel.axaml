@@ -1,0 +1,74 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             x:Class="View.CueListPanel"
+             x:DataType="vm:CueListPanelViewModel">
+
+  <DockPanel>
+
+    <!-- Header -->
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource PanelHeader-Bg}"
+            Padding="12 9"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource ThemeBorder0}">
+      <TextBlock Text="Cue List"
+                 Foreground="{DynamicResource ThemeText0}"
+                 FontSize="12"
+                 FontWeight="SemiBold"
+                 VerticalAlignment="Center" />
+    </Border>
+
+    <!-- Footer buttons -->
+    <Border DockPanel.Dock="Bottom"
+            Padding="8 6"
+            BorderThickness="0 1 0 0"
+            BorderBrush="{DynamicResource ThemeBorder0}">
+      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+        <Button Classes="themed"
+                Content="Back"
+                Command="{Binding BackCommand}"
+                Padding="10 5"
+                FontSize="11" />
+        <Button Classes="themed"
+                Content="Go"
+                Command="{Binding GoCommand}"
+                Padding="10 5"
+                FontSize="11" />
+        <Button Classes="themed"
+                Content="Record"
+                Command="{Binding RecordCommand}"
+                Padding="10 5"
+                FontSize="11" />
+      </StackPanel>
+    </Border>
+
+    <!-- Cue list -->
+    <ListBox ItemsSource="{Binding Cues}"
+             SelectedItem="{Binding ActiveCue}"
+             Background="Transparent"
+             BorderThickness="0"
+             Padding="0 4 0 4">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:CueViewModel">
+          <Grid ColumnDefinitions="40,*">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding DisplayNumber}"
+                       Foreground="{DynamicResource ThemeText2}"
+                       FontSize="11"
+                       FontFamily="Monospace"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding Label}"
+                       Foreground="{DynamicResource ThemeText0}"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+  </DockPanel>
+
+</UserControl>

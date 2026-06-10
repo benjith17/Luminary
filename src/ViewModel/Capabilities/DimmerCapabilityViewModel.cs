@@ -23,4 +23,7 @@ public partial class DimmerCapabilityViewModel : CapabilityViewModelBase
 
     partial void OnValueChanged(byte value) =>
         _showService.GetUniverse(_fixture.UniverseNumber)?.Set(_fixture.Channel + _capability.Offset, value);
+
+    public override byte[] Capture() => [Value];
+    public override void Restore(byte[] values) => Value = values[0];
 }

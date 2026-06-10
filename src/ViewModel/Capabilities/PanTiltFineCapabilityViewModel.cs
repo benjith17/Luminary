@@ -38,4 +38,13 @@ public partial class PanTiltFineCapabilityViewModel : CapabilityViewModelBase
         universe?.Set(_fixture.Channel + _capability.TiltOffset,     (byte)(value >> 8));
         universe?.Set(_fixture.Channel + _capability.TiltFineOffset, (byte)(value & 0xFF));
     }
+
+    public override byte[] Capture() =>
+        [(byte)(Pan >> 8), (byte)(Pan & 0xFF), (byte)(Tilt >> 8), (byte)(Tilt & 0xFF)];
+
+    public override void Restore(byte[] values)
+    {
+        Pan  = (ushort)((values[0] << 8) | values[1]);
+        Tilt = (ushort)((values[2] << 8) | values[3]);
+    }
 }
