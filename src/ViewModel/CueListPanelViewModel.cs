@@ -11,53 +11,119 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
         showService.CueList.Cues.Select(c => new CueViewModel(c))
     );
 
+    // The highlighted row / "next cue to fire". Selection only — does not touch the stage.
+    [ObservableProperty]
+    public partial CueViewModel? SelectedCue { get; set; }
+
+    // The cue currently live on stage (the last one GO'd). Tracked by reference, separate from selection.
     [ObservableProperty]
     public partial CueViewModel? ActiveCue { get; set; }
 
     [RelayCommand]
+    private void Go()
+    {
+        var target = SelectedCue ?? Cues.FirstOrDefault();
+        if (target is null) return;
+
+        Recall(target);
+
+        // Advance selection to the next cue; at the end, keep it on the fired cue.
+        var index = Cues.IndexOf(target);
+        SelectedCue = index + 1 < Cues.Count ? Cues[index + 1] : target;
+    }
+
+    [RelayCommand]
     private void Record()
     {
-        var nextMajor = showService.CueList.Cues.Count == 0
-            ? 1
-            : showService.CueList.Cues.Max(c => c.CueMajor) + 1;
-
-        var cue = new Cue { CueMajor = nextMajor };
+        var (major, minor) = NextCueNumber();
+        var cue = new Cue { CueMajor = major, CueMinor = minor };
 
         foreach (var fixture in fixtures.Fixtures)
         {
-            var snapshot = new CueFixtureSnapshot
+            cue.Fixtures.Add(new CueFixtureSnapshot
             {
                 FixtureName = fixture.Name,
                 CapabilityValues = fixture.Capabilities.Select(c => c.Capture()).ToList()
-            };
-            cue.Fixtures.Add(snapshot);
+            });
         }
 
-        showService.CueList.Cues.Add(cue);
-        Cues.Add(new CueViewModel(cue));
+        InsertSorted(cue);
+        SyncActiveIndex();
     }
 
     [RelayCommand]
-    private void Go()
+    private void Delete()
     {
-        if (showService.CueList.Cues.Count == 0) return;
-        showService.CueList.ActiveIndex = Math.Min(
-            showService.CueList.ActiveIndex + 1,
-            showService.CueList.Cues.Count - 1);
-        Recall(showService.CueList.Cues[showService.CueList.ActiveIndex]);
+        if (SelectedCue is null) return;
+
+        var index = Cues.IndexOf(SelectedCue);
+        if (SelectedCue == ActiveCue) ActiveCue = null;
+
+        showService.CueList.Cues.RemoveAt(index);
+        Cues.RemoveAt(index);
+
+        // Keep a neighbour selected (the one that shifted into this slot, else the new last).
+        SelectedCue = Cues.Count == 0 ? null : Cues[Math.Min(index, Cues.Count - 1)];
+        SyncActiveIndex();
     }
 
     [RelayCommand]
-    private void Back()
+    private void MoveUp() => Move(-1);
+
+    [RelayCommand]
+    private void MoveDown() => Move(1);
+
+    private void Move(int delta)
     {
-        if (showService.CueList.Cues.Count == 0) return;
-        showService.CueList.ActiveIndex = Math.Max(showService.CueList.ActiveIndex - 1, 0);
-        Recall(showService.CueList.Cues[showService.CueList.ActiveIndex]);
+        if (SelectedCue is null) return;
+
+        var from = Cues.IndexOf(SelectedCue);
+        var to = from + delta;
+        if (from < 0 || to < 0 || to >= Cues.Count) return;
+
+        var moved = Cues[from];
+        var neighbour = Cues[to];
+
+        // Reordering renumbers: the two adjacent cues swap numbers, so the list stays
+        // in numeric order while the selected cue changes slot (and keeps its content).
+        (moved.Model.CueMajor, neighbour.Model.CueMajor) = (neighbour.Model.CueMajor, moved.Model.CueMajor);
+        (moved.Model.CueMinor, neighbour.Model.CueMinor) = (neighbour.Model.CueMinor, moved.Model.CueMinor);
+        moved.NotifyNumberChanged();
+        neighbour.NotifyNumberChanged();
+
+        Cues.Move(from, to);
+
+        var model = showService.CueList.Cues[from];
+        showService.CueList.Cues.RemoveAt(from);
+        showService.CueList.Cues.Insert(to, model);
+
+        // Keep the moved cue selected so the button can be pressed repeatedly.
+        SelectedCue = moved;
+        SyncActiveIndex();
     }
 
-    private void Recall(Cue cue)
+    // Inserts a cue into both the model list and the VM collection at its numeric
+    // position, keeping the two index-aligned and the list sorted. Selects the new cue.
+    private void InsertSorted(Cue cue)
     {
-        foreach (var snapshot in cue.Fixtures)
+        var index = 0;
+        while (index < showService.CueList.Cues.Count &&
+               CompareNumber(showService.CueList.Cues[index], cue) < 0)
+            index++;
+
+        showService.CueList.Cues.Insert(index, cue);
+        Cues.Insert(index, new CueViewModel(cue));
+        SelectedCue = Cues[index];
+    }
+
+    private static int CompareNumber(Cue x, Cue y) =>
+        x.CueMajor != y.CueMajor ? x.CueMajor.CompareTo(y.CueMajor) : x.CueMinor.CompareTo(y.CueMinor);
+
+    private void Recall(CueViewModel cueVm)
+    {
+        // Hard cut for now. When fading arrives, wrap this restore loop rather than
+        // replacing it — the snapshot-per-capability shape stays the same.
+        foreach (var snapshot in cueVm.Model.Fixtures)
         {
             var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Name == snapshot.FixtureName);
             if (fixtureVm is null) continue;
@@ -67,11 +133,31 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
         }
 
         foreach (var vm in Cues) vm.IsActive = false;
-        var activeVm = Cues.FirstOrDefault(v => v.Model == cue);
-        if (activeVm is not null)
+        cueVm.IsActive = true;
+        ActiveCue = cueVm;
+        SyncActiveIndex();
+    }
+
+    // Keeps the persisted ActiveIndex in step with the active cue after any structural change.
+    private void SyncActiveIndex() =>
+        showService.CueList.ActiveIndex = ActiveCue is null ? -1 : Cues.IndexOf(ActiveCue);
+
+    private (int Major, int Minor) NextCueNumber()
+    {
+        var cues = showService.CueList.Cues;
+
+        // No selection, or the last cue is selected → append a fresh whole-number cue.
+        if (SelectedCue is null || Cues.IndexOf(SelectedCue) == Cues.Count - 1)
         {
-            activeVm.IsActive = true;
-            ActiveCue = activeVm;
+            var nextMajor = cues.Count == 0 ? 1 : cues.Max(c => c.CueMajor) + 1;
+            return (nextMajor, 0);
         }
+
+        // Mid-list → insert below the selected cue as the next free minor of its major.
+        var major = SelectedCue.Model.CueMajor;
+        var minor = SelectedCue.Model.CueMinor + 1;
+        while (cues.Any(c => c.CueMajor == major && c.CueMinor == minor))
+            minor++;
+        return (major, minor);
     }
 }

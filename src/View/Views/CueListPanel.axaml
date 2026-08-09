@@ -4,6 +4,10 @@
              x:Class="View.CueListPanel"
              x:DataType="vm:CueListPanelViewModel">
 
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="ActiveCue-Bar" Color="{DynamicResource ThemeSuccess}" />
+  </UserControl.Resources>
+
   <DockPanel>
 
     <!-- Header -->
@@ -26,13 +30,18 @@
             BorderBrush="{DynamicResource ThemeBorder0}">
       <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
         <Button Classes="themed"
-                Content="Back"
-                Command="{Binding BackCommand}"
+                Content="↑"
+                Command="{Binding MoveUpCommand}"
                 Padding="10 5"
                 FontSize="11" />
         <Button Classes="themed"
-                Content="Go"
-                Command="{Binding GoCommand}"
+                Content="↓"
+                Command="{Binding MoveDownCommand}"
+                Padding="10 5"
+                FontSize="11" />
+        <Button Classes="themed"
+                Content="Delete"
+                Command="{Binding DeleteCommand}"
                 Padding="10 5"
                 FontSize="11" />
         <Button Classes="themed"
@@ -40,30 +49,53 @@
                 Command="{Binding RecordCommand}"
                 Padding="10 5"
                 FontSize="11" />
+        <Button Classes="themed"
+                Content="Go"
+                Command="{Binding GoCommand}"
+                Padding="10 5"
+                FontSize="11" />
       </StackPanel>
     </Border>
 
     <!-- Cue list -->
     <ListBox ItemsSource="{Binding Cues}"
-             SelectedItem="{Binding ActiveCue}"
+             SelectedItem="{Binding SelectedCue}"
              Background="Transparent"
              BorderThickness="0"
-             Padding="0 4 0 4">
+             Padding="0 4 0 4"
+             DoubleTapped="OnCueDoubleTapped">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:CueViewModel">
-          <Grid ColumnDefinitions="40,*">
-            <TextBlock Grid.Column="0"
+          <Grid ColumnDefinitions="3,40,*">
+            <!-- Active-on-stage accent bar -->
+            <Border Grid.Column="0"
+                    Width="3"
+                    CornerRadius="1.5"
+                    IsVisible="{Binding IsActive}"
+                    Background="{DynamicResource ActiveCue-Bar}" />
+            <TextBlock Grid.Column="1"
                        Text="{Binding DisplayNumber}"
                        Foreground="{DynamicResource ThemeText2}"
                        FontSize="11"
                        FontFamily="Monospace"
-                       VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1"
-                       Text="{Binding Label}"
-                       Foreground="{DynamicResource ThemeText0}"
-                       FontSize="12"
                        VerticalAlignment="Center"
-                       TextTrimming="CharacterEllipsis" />
+                       Margin="6 0 0 0" />
+            <Panel Grid.Column="2">
+              <TextBlock Text="{Binding Label}"
+                         IsVisible="{Binding !IsEditing}"
+                         Foreground="{DynamicResource ThemeText0}"
+                         FontSize="12"
+                         VerticalAlignment="Center"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBox Text="{Binding Label, Mode=TwoWay}"
+                       IsVisible="{Binding IsEditing}"
+                       FontSize="12"
+                       Padding="2 0"
+                       MinHeight="0"
+                       VerticalContentAlignment="Center"
+                       KeyDown="OnRenameKeyDown"
+                       LostFocus="OnRenameLostFocus" />
+            </Panel>
           </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
