@@ -23,6 +23,9 @@ public sealed class CrossfadeEngine
     // re-firing mid-fade continues smoothly from wherever the previous fade had reached.
     public void Start(IEnumerable<(CapabilityViewModelBase Capability, byte[] Target)> targets, TimeSpan duration)
     {
+        // Fade each parameter's playback layer from the current on-stage output to the cue
+        // value. Starting from Output (not the raw playback layer) means LTP channels fade down
+        // from whatever is currently showing instead of snapping, and re-firing continues smoothly.
         _channels = targets
             .Select(x => new FadeChannel(x.Capability, x.Capability.Capture(), x.Target))
             .ToList();

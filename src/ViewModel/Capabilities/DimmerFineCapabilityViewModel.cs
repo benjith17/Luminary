@@ -1,36 +1,29 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
 using Model;
 
 namespace ViewModel;
 
-public partial class DimmerFineCapabilityViewModel : CapabilityViewModelBase
+public class DimmerFineCapabilityViewModel : CapabilityViewModelBase
 {
-    private readonly DimmerFineCapability _capability;
-    private readonly Fixture _fixture;
-    private readonly ShowService _showService;
+    public CapabilityParameter Intensity { get; }
 
     public DimmerFineCapabilityViewModel(DimmerFineCapability capability, Fixture fixture, ShowService showService)
         : base(capability.Name)
     {
-        _capability = capability;
-        _fixture = fixture;
-        _showService = showService;
-        Value = capability.DefaultFine;
+        Intensity = new CapabilityParameter(
+            max: 65535, width: 2, MergeMode.Htp, FadeBehavior.Fade,
+            v =>
+            {
+                var universe = showService.GetUniverse(fixture.UniverseNumber);
+                universe?.Set(fixture.Channel + capability.Offset,     (byte)(v >> 8));
+                universe?.Set(fixture.Channel + capability.FineOffset, (byte)(v & 0xFF));
+            })
+        {
+            Manual = capability.DefaultFine
+        };
+
+        Parameters = [Intensity];
     }
 
-    [ObservableProperty]
-    public partial ushort Value { get; set; }
-
-    partial void OnValueChanged(ushort value)
-    {
-        var universe = _showService.GetUniverse(_fixture.UniverseNumber);
-        universe?.Set(_fixture.Channel + _capability.Offset,     (byte)(value >> 8));
-        universe?.Set(_fixture.Channel + _capability.FineOffset, (byte)(value & 0xFF));
-    }
-
-    public override byte[] Capture() => [(byte)(Value >> 8), (byte)(Value & 0xFF)];
-    public override void Restore(byte[] values) => Value = (ushort)((values[0] << 8) | values[1]);
-
-    protected override FadeParam[] BuildFadeParams() =>
-        [new(Width: 2, FadeBehavior.Fade, v => Value = (ushort)v)];
+    protected override IReadOnlyList<CapabilityParameter> Parameters { get; }
 }

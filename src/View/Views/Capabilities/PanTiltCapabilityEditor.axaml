@@ -25,6 +25,10 @@
               Cursor="Cross"
               ClipToBounds="True">
         <Canvas>
+          <Ellipse Name="Ghost"
+                   Width="10" Height="10"
+                   Stroke="{DynamicResource ThemeSuccess}"
+                   StrokeThickness="2" />
           <Ellipse Name="Dot"
                    Width="10" Height="10"
                    Fill="{DynamicResource ThemeText0}" />

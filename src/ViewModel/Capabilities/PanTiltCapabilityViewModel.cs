@@ -1,42 +1,32 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.Generic;
 using Model;
 
 namespace ViewModel;
 
-public partial class PanTiltCapabilityViewModel : CapabilityViewModelBase
+public class PanTiltCapabilityViewModel : CapabilityViewModelBase
 {
-    private readonly PanTiltCapability _capability;
-    private readonly Fixture _fixture;
-    private readonly ShowService _showService;
+    public CapabilityParameter Pan { get; }
+    public CapabilityParameter Tilt { get; }
 
     public PanTiltCapabilityViewModel(PanTiltCapability capability, Fixture fixture, ShowService showService)
         : base(capability.Name)
     {
-        _capability = capability;
-        _fixture = fixture;
-        _showService = showService;
-        Pan  = capability.Default;
-        Tilt = capability.DefaultTilt;
+        Pan = new CapabilityParameter(255, 1, MergeMode.Ltp, FadeBehavior.Snap,
+            v => showService.GetUniverse(fixture.UniverseNumber)
+                ?.Set(fixture.Channel + capability.Offset, (byte)v))
+        {
+            Manual = capability.Default
+        };
+
+        Tilt = new CapabilityParameter(255, 1, MergeMode.Ltp, FadeBehavior.Snap,
+            v => showService.GetUniverse(fixture.UniverseNumber)
+                ?.Set(fixture.Channel + capability.TiltOffset, (byte)v))
+        {
+            Manual = capability.DefaultTilt
+        };
+
+        Parameters = [Pan, Tilt];
     }
 
-    [ObservableProperty]
-    public partial byte Pan { get; set; }
-
-    [ObservableProperty]
-    public partial byte Tilt { get; set; }
-
-    partial void OnPanChanged(byte value) =>
-        _showService.GetUniverse(_fixture.UniverseNumber)?.Set(_fixture.Channel + _capability.Offset, value);
-
-    partial void OnTiltChanged(byte value) =>
-        _showService.GetUniverse(_fixture.UniverseNumber)?.Set(_fixture.Channel + _capability.TiltOffset, value);
-
-    public override byte[] Capture() => [Pan, Tilt];
-    public override void Restore(byte[] values) { Pan = values[0]; Tilt = values[1]; }
-
-    protected override FadeParam[] BuildFadeParams() =>
-    [
-        new(Width: 1, FadeBehavior.Snap, v => Pan  = (byte)v),
-        new(Width: 1, FadeBehavior.Snap, v => Tilt = (byte)v),
-    ];
+    protected override IReadOnlyList<CapabilityParameter> Parameters { get; }
 }

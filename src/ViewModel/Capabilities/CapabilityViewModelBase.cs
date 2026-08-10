@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace ViewModel;
 
 // How a single property behaves during a crossfade.
@@ -11,38 +15,52 @@ public abstract class CapabilityViewModelBase(string name) : ViewModelBase
 {
     public string Name { get; } = name;
 
-    public abstract byte[] Capture();
-    public abstract void Restore(byte[] values);
+    // A capability's controllable values, ordered to match the DMX snapshot layout: each 8-bit
+    // parameter is one byte, each 16-bit parameter is two (MSB then LSB). This is where each
+    // property's merge (HTP/LTP) and fade (fade/snap) behaviour is attributed.
+    protected abstract IReadOnlyList<CapabilityParameter> Parameters { get; }
 
-    // Each capability declares its properties here, in the same order and byte-width they
-    // appear in Capture()/Restore(). This is where fade-vs-snap is attributed per property.
-    protected abstract FadeParam[] BuildFadeParams();
+    // Captures the merged output — used both for recording ("record what you see") and as the
+    // start point of a crossfade ("fade from what's currently on stage").
+    public byte[] Capture() => Pack(p => p.Output);
 
-    private FadeParam[]? _fadeParams;
-    private FadeParam[] FadeParams => _fadeParams ??= BuildFadeParams();
-
-    // Interpolate from a captured start state toward a captured target at progress t (0..1).
-    // Snap properties jump to the target; fade properties interpolate. 16-bit properties are
-    // reconstructed from their two bytes so they interpolate as a single value.
+    // A cue drives the playback layer: snap parameters jump to target, fade parameters interpolate.
+    // 16-bit parameters are reconstructed from their two bytes so they interpolate as one value.
     public void ApplyLerp(byte[] from, byte[] to, double t)
     {
         var offset = 0;
-        foreach (var param in FadeParams)
+        foreach (var param in Parameters)
         {
             var start = Read(from, offset, param.Width);
             var target = Read(to, offset, param.Width);
-            var value = param.Behavior == FadeBehavior.Snap
+            param.Playback = param.Fade == FadeBehavior.Snap
                 ? target
                 : (int)Math.Round(start + (target - start) * t);
-            param.Set(value);
+            param.PlaybackActive = true;
             offset += param.Width;
         }
     }
 
+    private byte[] Pack(Func<CapabilityParameter, int> select)
+    {
+        var bytes = new byte[Parameters.Sum(p => p.Width)];
+        var offset = 0;
+        foreach (var param in Parameters)
+        {
+            var value = select(param);
+            if (param.Width == 2)
+            {
+                bytes[offset++] = (byte)(value >> 8);
+                bytes[offset++] = (byte)(value & 0xFF);
+            }
+            else
+            {
+                bytes[offset++] = (byte)value;
+            }
+        }
+        return bytes;
+    }
+
     private static int Read(byte[] data, int offset, int width) =>
         width == 2 ? (data[offset] << 8) | data[offset + 1] : data[offset];
-
-    // One controllable property: how many bytes it occupies in the snapshot, whether it
-    // fades or snaps, and how to write the resolved value back to the capability.
-    protected readonly record struct FadeParam(int Width, FadeBehavior Behavior, Action<int> Set);
 }

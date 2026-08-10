@@ -15,12 +15,13 @@ public partial class PanTiltFineCapabilityEditor : UserControl
         {
             if (DataContext is PanTiltFineCapabilityViewModel vm)
             {
-                vm.PropertyChanged += (_, _) => UpdateDot();
-                UpdateDot();
+                vm.Pan.PropertyChanged  += (_, _) => UpdateDots();
+                vm.Tilt.PropertyChanged += (_, _) => UpdateDots();
+                UpdateDots();
             }
         };
 
-        Pad.SizeChanged += (_, _) => UpdateDot();
+        Pad.SizeChanged += (_, _) => UpdateDots();
         Pad.PointerPressed += OnPointerPressed;
         Pad.PointerMoved += OnPointerMoved;
     }
@@ -37,16 +38,22 @@ public partial class PanTiltFineCapabilityEditor : UserControl
     private void UpdateFromPointer(Point pos)
     {
         if (DataContext is not PanTiltFineCapabilityViewModel vm) return;
-        vm.Pan  = (ushort)Math.Clamp(pos.X / Pad.Bounds.Width  * 65535, 0, 65535);
-        vm.Tilt = (ushort)Math.Clamp(pos.Y / Pad.Bounds.Height * 65535, 0, 65535);
+        vm.Pan.Manual  = (int)Math.Clamp(pos.X / Pad.Bounds.Width  * vm.Pan.Max,  0, vm.Pan.Max);
+        vm.Tilt.Manual = (int)Math.Clamp(pos.Y / Pad.Bounds.Height * vm.Tilt.Max, 0, vm.Tilt.Max);
     }
 
-    private void UpdateDot()
+    private void UpdateDots()
     {
         if (DataContext is not PanTiltFineCapabilityViewModel vm) return;
         var w = Pad.Bounds.Width  - Dot.Width;
         var h = Pad.Bounds.Height - Dot.Height;
-        Canvas.SetLeft(Dot, vm.Pan  / 65535.0 * w);
-        Canvas.SetTop(Dot,  vm.Tilt / 65535.0 * h);
+
+        Canvas.SetLeft(Dot, vm.Pan.ManualFraction  * w);
+        Canvas.SetTop(Dot,  vm.Tilt.ManualFraction * h);
+
+        // Cue value being fed in.
+        Ghost.IsVisible = vm.Pan.PlaybackActive || vm.Tilt.PlaybackActive;
+        Canvas.SetLeft(Ghost, vm.Pan.PlaybackFraction  * w);
+        Canvas.SetTop(Ghost,  vm.Tilt.PlaybackFraction * h);
     }
 }

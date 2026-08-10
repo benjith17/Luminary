@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ViewModel"
+             xmlns:views="clr-namespace:View"
              x:Class="View.DimmerFineCapabilityEditor"
              x:DataType="vm:DimmerFineCapabilityViewModel">
 
@@ -15,13 +16,9 @@
                  FontSize="10"
                  FontWeight="SemiBold"
                  Margin="0 0 0 8" />
-      <Slider Grid.Row="1"
-              Orientation="Vertical"
-              Minimum="0" Maximum="65535"
-              Value="{Binding Value}"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Stretch"
-              MinHeight="60" />
+      <views:LevelFader Grid.Row="1"
+                        DataContext="{Binding Intensity}"
+                        VerticalAlignment="Stretch" />
     </Grid>
   </Border>
 
