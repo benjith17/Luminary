@@ -52,13 +52,17 @@
             <StackPanel IsVisible="{Binding ShowArtNetSettings}">
               <TextBlock Text="ART-NET SETTINGS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" Margin="0 24 0 12" />
               <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="IP Address" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Destination IP" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Ip, Mode=TwoWay}" FontSize="13" />
                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Port, Mode=TwoWay}" FontSize="13" />
                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Art-Net Universe" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
                 <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ArtNetUniverse, Mode=TwoWay}" FontSize="13" />
               </Grid>
+              <TextBlock Text="255.255.255.255 broadcasts to the whole network. Use a node's IP to target it directly."
+                         FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ThemeText2}" Margin="0 10 0 0" />
+              <TextBlock Text="Art-Net universes are 0-based (0–32767) — match the number your receiver expects."
+                         FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ThemeText2}" Margin="0 6 0 0" />
             </StackPanel>
           </StackPanel>
         </ScrollViewer>

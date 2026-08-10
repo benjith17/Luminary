@@ -6,7 +6,9 @@ public abstract class UniverseOutput;
 
 public sealed class ArtNetOutput : UniverseOutput
 {
-    public string Ip { get; set; } = "127.0.0.1";
+    // Limited broadcast by default: received by anything on the local network regardless of its
+    // IP scheme. Can be set to a specific node IP or a directed subnet broadcast (e.g. 2.255.255.255).
+    public string Ip { get; set; } = "255.255.255.255";
     public int Port { get; set; } = 6454;
     public int ArtNetUniverse { get; set; }
 }

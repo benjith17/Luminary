@@ -7,6 +7,11 @@ public class ArtNetSender : IDisposable
 {
     private readonly UdpClient _udp;
     private readonly IPEndPoint _target;
+
+    // Per-universe ArtDmx sequence, cycling 1..255 (0 means "sequencing disabled", so it's skipped).
+    // Lets receivers detect and reorder out-of-order packets. Only the transmit thread touches this.
+    private byte _sequence;
+
     public byte[] Dmx { get; private set; } = new byte[530]; // 18-byte header + 512 DMX channels
 
     public ArtNetSender(string ip, int port, int universe)
@@ -36,6 +41,9 @@ public class ArtNetSender : IDisposable
     /// </summary>
     public void Send()
     {
+        _sequence = _sequence == 255 ? (byte)1 : (byte)(_sequence + 1);
+        Dmx[12] = _sequence;
+
         try
         {
             _udp.Send(Dmx, Dmx.Length, _target);
@@ -63,7 +71,7 @@ public class ArtNetSender : IDisposable
         Dmx[9]  = 0x50; // OpCode hi
         Dmx[10] = 0x00; // ProtVer hi
         Dmx[11] = 14;   // ProtVer lo
-        Dmx[12] = 0;    // Sequence (0 = disabled)
+        Dmx[12] = 0;    // Sequence (set per-send in Send())
         Dmx[13] = 0;    // Physical
         Dmx[14] = (byte)(universe & 0xFF); // Universe lo
         Dmx[15] = (byte)(universe >> 8);   // Universe hi

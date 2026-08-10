@@ -63,8 +63,11 @@ public partial class UniverseItemViewModel : ViewModelBase
         get => (_universe.Output as ArtNetOutput)?.ArtNetUniverse ?? 0;
         set
         {
-            if (_universe.Output is ArtNetOutput a)
-                SetProperty(a.ArtNetUniverse, value, a, (o, v) => o.ArtNetUniverse = v);
+            if (_universe.Output is not ArtNetOutput a) return;
+            // 15-bit Port-Address (Net + Sub-Net + Universe). Clamp so the value can't overflow
+            // into the Net byte's reserved high bit.
+            var clamped = Math.Clamp(value, 0, 32767);
+            SetProperty(a.ArtNetUniverse, clamped, a, (o, v) => o.ArtNetUniverse = v);
         }
     }
 
