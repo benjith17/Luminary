@@ -95,6 +95,11 @@ public sealed class ArtNetService : IDisposable
             controller.Dispose();
             _v4Controller = null;
         }
+
+        // Advertise the universes we transmit so discovery tools can find us.
+        _v4Controller?.SetLocalUniverses([.. universes
+            .Select(u => u.Output).OfType<ArtNet4Output>()
+            .Select(o => o.ArtNetUniverse)]);
     }
 
     private void DropSender(byte number)

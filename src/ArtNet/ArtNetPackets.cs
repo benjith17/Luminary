@@ -17,6 +17,16 @@ public static class ArtNetPackets
     // ArtPoll flag bits (field "Flags").
     public const byte PollFlagReplyOnChange = 0x02; // node also sends ArtPollReply when its state changes
 
+    // Identity we advertise in ArtPollReply.
+    private const string ShortName = "Luminary";
+    private const string LongName = "Luminary Lighting Console";
+
+    /// <summary>
+    /// The Art-Net OpCode of a packet, or -1 if it isn't a valid Art-Net packet.
+    /// </summary>
+    public static int OpCodeOf(byte[] data, int length) =>
+        length < 10 || !HasArtNetId(data) ? -1 : data[8] | (data[9] << 8);
+
     /// <summary>
     /// Builds an ArtPoll packet used to discover nodes and their subscribed universes.
     /// </summary>
@@ -81,6 +91,58 @@ public static class ArtNetPackets
         }
 
         return new ParsedReply(ip, bindIndex, universes);
+    }
+
+    /// <summary>
+    /// Builds an ArtPollReply advertising this device and up to four universes that all share the
+    /// same Net and Sub-Net. The universes are reported as output ports so discovery tools associate
+    /// us with them. Callers with universes across multiple Net/Sub-Nets send one reply per group,
+    /// incrementing <paramref name="bindIndex"/>.
+    /// </summary>
+    public static byte[] BuildArtPollReply(IPAddress localIp, int net, int subNet, IReadOnlyList<int> lowNibbles, int bindIndex)
+    {
+        var p = new byte[239];
+        Array.Copy(Id, p, 8);
+        p[8] = OpPollReply & 0xFF;          // OpCode low byte first
+        p[9] = (OpPollReply >> 8) & 0xFF;
+
+        var ip = localIp.GetAddressBytes();
+        Array.Copy(ip, 0, p, 10, 4);        // IP Address
+        p[14] = Port & 0xFF;                // Port 0x1936, low byte first
+        p[15] = (Port >> 8) & 0xFF;
+        p[16] = 0;                          // VersInfoH
+        p[17] = 1;                          // VersInfoL
+        p[18] = (byte)(net & 0x7F);         // NetSwitch
+        p[19] = (byte)(subNet & 0x0F);      // SubSwitch
+        p[23] = 0xC0;                       // Status1: indicators in Normal mode
+
+        WriteString(p, 26, ShortName, 18);  // PortName
+        WriteString(p, 44, LongName, 64);   // LongName
+        WriteString(p, 108, "#0001 [0000] OK", 64); // NodeReport
+
+        int ports = Math.Min(lowNibbles.Count, 4);
+        p[173] = (byte)ports;               // NumPortsLo
+        for (int i = 0; i < ports; i++)
+        {
+            p[174 + i] = 0x80;              // PortTypes: output, DMX512
+            p[182 + i] = 0x80;              // GoodOutputA: data is being output
+            p[190 + i] = (byte)(lowNibbles[i] & 0x0F); // SwOut
+        }
+
+        p[200] = 0x01;                      // Style: StController
+        Array.Copy(ip, 0, p, 207, 4);       // BindIp (root device)
+        p[211] = (byte)bindIndex;           // BindIndex (1 = root)
+        p[212] = 0x08;                      // Status2: supports 15-bit Port-Address (Art-Net 3/4)
+        p[227] = 44;                        // RefreshRateLo: 44 Hz (max DMX512)
+        return p;
+    }
+
+    private static void WriteString(byte[] buffer, int offset, string value, int fieldLength)
+    {
+        var bytes = System.Text.Encoding.ASCII.GetBytes(value);
+        int n = Math.Min(bytes.Length, fieldLength - 1); // leave room for the null terminator
+        Array.Copy(bytes, 0, buffer, offset, n);
+        buffer[offset + n] = 0;
     }
 
     private static bool HasArtNetId(byte[] data)
