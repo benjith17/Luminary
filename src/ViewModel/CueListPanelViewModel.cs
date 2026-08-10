@@ -44,7 +44,7 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
         {
             cue.Fixtures.Add(new CueFixtureSnapshot
             {
-                FixtureName = fixture.Name,
+                FixtureId = fixture.Fixture.Id,
                 CapabilityValues = fixture.Capabilities.Select(c => c.Capture()).ToList()
             });
         }
@@ -127,7 +127,7 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
 
         foreach (var snapshot in cueVm.Model.Fixtures)
         {
-            var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Name == snapshot.FixtureName);
+            var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Fixture.Id == snapshot.FixtureId);
             if (fixtureVm is null) continue;
 
             foreach (var (capability, values) in fixtureVm.Capabilities.Zip(snapshot.CapabilityValues))

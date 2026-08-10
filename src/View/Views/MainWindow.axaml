@@ -22,6 +22,13 @@
           Background="{DynamicResource PanelHeader-Bg}"
           BorderThickness="0 0 0 1"
           BorderBrush="{DynamicResource ThemeBorder0}">
+      <MenuItem Header="File">
+        <MenuItem Header="New" Click="OnNewClick" />
+        <MenuItem Header="Open…" Click="OnOpenClick" />
+        <Separator />
+        <MenuItem Header="Save" Click="OnSaveClick" />
+        <MenuItem Header="Save As…" Click="OnSaveAsClick" />
+      </MenuItem>
       <MenuItem Header="Patch" Click="OnPatchClick" />
     </Menu>
 
