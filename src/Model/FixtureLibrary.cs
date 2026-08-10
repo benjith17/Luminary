@@ -14,18 +14,21 @@ public class FixtureLibrary
         new FixtureDefinition
         {
             Name = "Generic Dimmer",
+            Manufacturer = "Generic", Model = "Dimmer", Mode = "1 Channel",
             ChannelCount = 1,
             Capabilities = [new DimmerCapability("Dimmer", offset: 0)]
         },
         new FixtureDefinition
         {
             Name = "Generic RGB",
+            Manufacturer = "Generic", Model = "RGB", Mode = "3 Channel",
             ChannelCount = 3,
             Capabilities = [new ColorCapability("Color", redOffset: 0, greenOffset: 1, blueOffset: 2)]
         },
         new FixtureDefinition
         {
             Name = "Big Test Light",
+            Manufacturer = "Generic", Model = "Big Test Light", Mode = "16 Channel",
             ChannelCount = 16,
             Capabilities =
             [
@@ -40,6 +43,7 @@ public class FixtureLibrary
         new FixtureDefinition
         {
             Name = "Moving Head",
+            Manufacturer = "Generic", Model = "Moving Head", Mode = "6 Channel",
             ChannelCount = 6,
             Capabilities =
             [
@@ -51,6 +55,7 @@ public class FixtureLibrary
         new FixtureDefinition
         {
             Name = "Encore Strobe",
+            Manufacturer = "Encore", Model = "Strobe", Mode = "34 Channel",
             ChannelCount = 34,
             Capabilities =
             [
@@ -64,5 +69,26 @@ public class FixtureLibrary
                 new DimmerCapability("Effect", offset: 33),
             ]
         },
+        new FixtureDefinition
+        {
+            Name = "Robe Robin 600 LEDWash (Reduced RGBW Wash 8bit)",
+            Manufacturer = "Robe", Model = "Robin 600 LEDWash", Mode = "Reduced RGBW Wash 8bit",
+            ChannelCount = 15,
+            Capabilities =
+            [
+                new PanTiltFineCapability("Pan/Tilt",
+                    panOffset: 0, panFineOffset: 1, tiltOffset: 2, tiltFineOffset: 3,
+                    defaultPan: 32768, defaultTilt: 32768),
+                new DimmerCapability("PositionMSpeed", offset: 4),
+                new DimmerCapability("Control 1", offset: 5),
+                new ColorCapability("Color", redOffset: 6, greenOffset: 7, blueOffset: 8),
+                new DimmerCapability("White", offset: 9),
+                new DimmerCapability("CTO", offset: 10),
+                new DimmerCapability("Color", offset: 11),
+                new DimmerCapability("Zoom", offset: 12),
+                new DimmerCapability("Shutter", offset: 13),
+                new DimmerCapability("Dimmer", offset: 14),
+            ]
+        }
     ];
 }

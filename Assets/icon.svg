@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img">
+  <title>Luminary</title>
+
+  <!-- ground -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="#12151A"/>
+
+  <!-- outer ring: three source beams, band r152-r200, 46 unit parallel slots -->
+  <g>
+    <path d="M 455.98 252.87 A 200 200 0 0 1 201.22 448.35 L 219.75 403.62 A 152 152 0 0 0 407.97 259.19 Z" fill="#FFC24A"/>
+    <path d="M 158.72 430.75 A 200 200 0 0 1 116.81 112.39 L 146.29 150.80 A 152 152 0 0 0 177.25 386.01 Z" fill="#FF2E88"/>
+    <path d="M 153.31 84.38 A 200 200 0 0 1 449.97 207.26 L 401.96 213.59 A 152 152 0 0 0 182.78 122.80 Z" fill="#2ED3F0"/>
+  </g>
+
+  <!-- inner ring: rotated 60deg, band r81-r117, 26 unit parallel slots -->
+  <!-- each arc is the additive blend of the two outer arcs it bridges -->
+  <g>
+    <path d="M 316.47 356.16 A 117 117 0 0 1 142.42 284.07 L 178.43 279.32 A 81 81 0 0 0 294.36 327.34 Z" fill="#FF7A5C"/>
+    <path d="M 139.02 258.29 A 117 117 0 0 1 288.49 143.60 L 274.59 177.16 A 81 81 0 0 0 175.04 253.55 Z" fill="#A05CF5"/>
+    <path d="M 312.51 153.55 A 117 117 0 0 1 337.10 340.34 L 314.98 311.51 A 81 81 0 0 0 298.61 187.11 Z" fill="#6EE39A"/>
+  </g>
+
+  <!-- core -->
+  <circle cx="256" cy="256" r="26" fill="#FFFFFF"/>
+</svg>

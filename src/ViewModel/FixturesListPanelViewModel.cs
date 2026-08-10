@@ -27,7 +27,6 @@ public partial class FixturesListPanelViewModel : ViewModelBase
             showService.Universes.Select(u => u.Number));
 
         SelectedUniverse = Universes.FirstOrDefault();
-        SelectedPersonality = library.Definitions.FirstOrDefault();
     }
 
     public ObservableCollection<FixtureListItemViewModel> Fixtures { get; }
@@ -45,10 +44,6 @@ public partial class FixturesListPanelViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial UniverseItemViewModel? SelectedUniverse { get; set; }
-
-    // The personality used when adding a new fixture.
-    [ObservableProperty]
-    public partial FixtureDefinition? SelectedPersonality { get; set; }
 
     [RelayCommand]
     private void AddUniverse()
@@ -86,14 +81,12 @@ public partial class FixturesListPanelViewModel : ViewModelBase
         return 1;
     }
 
-    [RelayCommand]
-    private void AddFixture()
+    // Patches a new fixture of the given personality, addressed after the last fixture in universe 1.
+    public void AddFixture(FixtureDefinition def)
     {
-        var def = SelectedPersonality ?? _library.Definitions.FirstOrDefault();
-        if (def is null) return;
-
         var universeNumber = _showService.Universes.FirstOrDefault()?.Number ?? (byte)1;
-        var fixture = new Fixture(UniqueName(def.Name), NextFreeAddress(universeNumber, def), def)
+        var label = string.IsNullOrWhiteSpace(def.Model) ? def.Name : def.Model;
+        var fixture = new Fixture(UniqueName(label), NextFreeAddress(universeNumber, def), def)
         {
             UniverseNumber = universeNumber
         };

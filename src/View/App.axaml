@@ -15,6 +15,24 @@
     <Application.Styles>
         <FluentTheme />
 
+        <!-- Suppress the inline validation-error text under fields (e.g. an empty/invalid number).
+             The control still turns its border red via the :error pseudo-class, but the full error
+             message no longer prints underneath and pushes the layout around. -->
+        <Style Selector="DataValidationErrors">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      CornerRadius="{TemplateBinding CornerRadius}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Content="{TemplateBinding Content}"
+                                      Padding="{TemplateBinding Padding}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
         <!-- Base style for all themed splitters -->
         <Style Selector="GridSplitter.themed">
             <Setter Property="Background" Value="{DynamicResource Splitter-Bg}" />
