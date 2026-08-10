@@ -30,9 +30,12 @@ public sealed class JsonShowStore : IShowStore
         Universes = show.Universes.Select(u => new UniverseDto
         {
             Number = u.Number,
-            Output = u.Output is ArtNetOutput a
-                ? new OutputDto { Type = "artnet", Ip = a.Ip, Port = a.Port, ArtNetUniverse = a.ArtNetUniverse }
-                : null
+            Output = u.Output switch
+            {
+                ArtNetOutput a => new OutputDto { Type = "artnet", Ip = a.Ip, Port = a.Port, ArtNetUniverse = a.ArtNetUniverse },
+                ArtNet4Output a => new OutputDto { Type = "artnet4", Port = a.Port, ArtNetUniverse = a.ArtNetUniverse, ManualTargets = a.ManualTargets },
+                _ => null
+            }
         }).ToList(),
         Fixtures = show.Fixtures.Select(f => new FixtureDto
         {
@@ -66,14 +69,22 @@ public sealed class JsonShowStore : IShowStore
         {
             Universes = dto.Universes.Select(u => new Universe(u.Number)
             {
-                Output = u.Output is { Type: "artnet" } o
-                    ? new ArtNetOutput
+                Output = u.Output switch
+                {
+                    { Type: "artnet4" } o => new ArtNet4Output
                     {
-                        Ip = o.Ip ?? "127.0.0.1",
+                        Port = o.Port ?? 6454,
+                        ArtNetUniverse = o.ArtNetUniverse ?? 0,
+                        ManualTargets = o.ManualTargets ?? []
+                    },
+                    { Type: "artnet" } o => new ArtNetOutput
+                    {
+                        Ip = o.Ip ?? "255.255.255.255",
                         Port = o.Port ?? 6454,
                         ArtNetUniverse = o.ArtNetUniverse ?? 0
-                    }
-                    : null
+                    },
+                    _ => (UniverseOutput?)null
+                }
             }).ToList()
         };
 

@@ -20,10 +20,11 @@ public sealed class UniverseDto
 
 public sealed class OutputDto
 {
-    public string Type { get; set; } = "artnet";
-    public string? Ip { get; set; }
+    public string Type { get; set; } = "artnet";       // "artnet" (v3 broadcast) | "artnet4" (v4 unicast)
+    public string? Ip { get; set; }                     // v3 only
     public int? Port { get; set; }
     public int? ArtNetUniverse { get; set; }
+    public List<string>? ManualTargets { get; set; }    // v4 only
 }
 
 public sealed class FixtureDto
