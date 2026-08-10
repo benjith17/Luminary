@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModel"
+        xmlns:model="using:Model"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="View.ConfigWindow"
+        x:DataType="vm:FixturesListPanelViewModel"
+        Title="Patch"
+        Width="920" Height="620"
+        MinWidth="640" MinHeight="440"
+        Background="{DynamicResource ThemeBg0}">
+
+  <TabControl Padding="0" Margin="0">
+
+    <!-- ============ Universes ============ -->
+    <TabItem Header="Universes">
+      <Grid ColumnDefinitions="250,*">
+
+        <DockPanel Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+          <Border DockPanel.Dock="Bottom" Padding="8 6"
+                  BorderThickness="0 1 0 0" BorderBrush="{DynamicResource ThemeBorder0}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Button Classes="themed" Content="+ Add" Command="{Binding AddUniverseCommand}" Padding="10 5" FontSize="12" />
+              <Button Classes="themed" Content="Remove" Command="{Binding RemoveUniverseCommand}" Padding="10 5" FontSize="12" />
+            </StackPanel>
+          </Border>
+          <ListBox ItemsSource="{Binding Universes}" SelectedItem="{Binding SelectedUniverse}"
+                   Background="Transparent" BorderThickness="0" Padding="0 4">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:UniverseItemViewModel">
+                <StackPanel>
+                  <TextBlock Text="{Binding Number, StringFormat='Universe {0}'}" FontSize="13" Foreground="{DynamicResource ThemeText0}" />
+                  <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="{DynamicResource ThemeText2}" Margin="0 2 0 0" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1"
+                      IsVisible="{Binding SelectedUniverse, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+          <StackPanel Margin="26 22" DataContext="{Binding SelectedUniverse}" x:DataType="vm:UniverseItemViewModel">
+            <TextBlock Text="{Binding Number, StringFormat='Universe {0}'}" FontSize="16" Foreground="{DynamicResource ThemeText0}" />
+            <TextBlock Text="512 channels" FontSize="12" Foreground="{DynamicResource ThemeText2}" Margin="0 4 0 22" />
+
+            <Grid ColumnDefinitions="120,*" RowSpacing="14">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Output" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <ComboBox Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding OutputTypes}" SelectedItem="{Binding OutputType}" FontSize="13" />
+            </Grid>
+
+            <StackPanel IsVisible="{Binding ShowArtNetSettings}">
+              <TextBlock Text="ART-NET SETTINGS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" Margin="0 24 0 12" />
+              <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="IP Address" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Ip, Mode=TwoWay}" FontSize="13" />
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Port" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Port, Mode=TwoWay}" FontSize="13" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Art-Net Universe" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ArtNetUniverse, Mode=TwoWay}" FontSize="13" />
+              </Grid>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </TabItem>
+
+    <!-- ============ Fixtures ============ -->
+    <TabItem Header="Fixtures">
+      <Grid ColumnDefinitions="250,*">
+
+        <DockPanel Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+          <Border DockPanel.Dock="Bottom" Padding="8 6"
+                  BorderThickness="0 1 0 0" BorderBrush="{DynamicResource ThemeBorder0}">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <ComboBox ItemsSource="{Binding Personalities}" SelectedItem="{Binding SelectedPersonality}"
+                        FontSize="12" MinWidth="100">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="model:FixtureDefinition">
+                    <TextBlock Text="{Binding Name}" FontSize="12" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <Button Classes="themed" Content="+ Add" Command="{Binding AddFixtureCommand}" Padding="10 5" FontSize="12" />
+              <Button Classes="themed" Content="Remove" Command="{Binding RemoveFixtureCommand}" Padding="10 5" FontSize="12" />
+            </StackPanel>
+          </Border>
+          <ListBox ItemsSource="{Binding Fixtures}" SelectedItem="{Binding SelectedFixture}"
+                   Background="Transparent" BorderThickness="0" Padding="0 4">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FixtureListItemViewModel">
+                <StackPanel>
+                  <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource ThemeText0}" />
+                  <TextBlock Text="{Binding PatchSummary}" FontSize="11" Foreground="{DynamicResource ThemeText2}" Margin="0 2 0 0" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1"
+                      IsVisible="{Binding SelectedFixture, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+          <StackPanel Margin="26 22">
+            <TextBlock Text="{Binding SelectedFixture.Name}" FontSize="16" Foreground="{DynamicResource ThemeText0}" />
+            <TextBlock Text="{Binding SelectedFixture.TypeName}" FontSize="12" Foreground="{DynamicResource ThemeText2}" Margin="0 4 0 22" />
+
+            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedFixture.Name, Mode=TwoWay}" FontSize="13" />
+
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="Type" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFixture.TypeName}" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText0}" FontSize="13" />
+
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Universe" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding UniverseNumbers}"
+                        SelectedItem="{Binding SelectedFixture.UniverseNumber, Mode=TwoWay}" FontSize="13" />
+
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="Address" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFixture.Address, Mode=TwoWay}" FontSize="13" />
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </TabItem>
+
+  </TabControl>
+</Window>

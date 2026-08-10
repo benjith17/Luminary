@@ -41,6 +41,12 @@ public abstract class CapabilityViewModelBase(string name) : ViewModelBase
         }
     }
 
+    // Re-emit every parameter's current output to DMX (used after a re-patch clears the universe).
+    public void PushOutput()
+    {
+        foreach (var param in Parameters) param.PushOutput();
+    }
+
     private byte[] Pack(Func<CapabilityParameter, int> select)
     {
         var bytes = new byte[Parameters.Sum(p => p.Width)];

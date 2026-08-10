@@ -9,10 +9,10 @@ public class ArtNetSender : IDisposable
     private readonly IPEndPoint _target;
     public byte[] Dmx { get; private set; } = new byte[530]; // 18-byte header + 512 DMX channels
 
-    public ArtNetSender(string ip, int universe = 0)
+    public ArtNetSender(string ip, int port, int universe)
     {
         _udp = new UdpClient { EnableBroadcast = true };
-        _target = new IPEndPoint(IPAddress.Parse(ip), 6454);
+        _target = new IPEndPoint(IPAddress.Parse(ip), port);
         BuildHeader(universe);
     }
 

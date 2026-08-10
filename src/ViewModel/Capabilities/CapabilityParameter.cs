@@ -71,4 +71,7 @@ public partial class CapabilityParameter : ObservableObject
         _writeOutput(Output);
         OnPropertyChanged(nameof(Output));
     }
+
+    // Re-emit the current output to DMX, e.g. after a re-patch cleared the universe.
+    public void PushOutput() => _writeOutput(Output);
 }

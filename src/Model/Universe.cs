@@ -1,9 +1,12 @@
 namespace Model;
 
-public class Universe(byte number, string targetIp = "127.0.0.1")
+public class Universe(byte number)
 {
     public byte Number { get; init; } = number;
-    public string TargetIp { get; set; } = targetIp;
+
+    // How this universe transmits. Null = no output. Defaults to Art-Net on the local machine.
+    public UniverseOutput? Output { get; set; } = new ArtNetOutput();
+
     public byte[] Channels { get; private set; } = new byte[512];
 
     public FixtureGroup[] Group { get; set; } = [];

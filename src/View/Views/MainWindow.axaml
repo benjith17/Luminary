@@ -15,7 +15,17 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid>
+  <DockPanel>
+
+    <!-- Menu bar -->
+    <Menu DockPanel.Dock="Top"
+          Background="{DynamicResource PanelHeader-Bg}"
+          BorderThickness="0 0 0 1"
+          BorderBrush="{DynamicResource ThemeBorder0}">
+      <MenuItem Header="Patch" Click="OnPatchClick" />
+    </Menu>
+
+    <Grid>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
       <ColumnDefinition Width="4"/>
@@ -71,5 +81,7 @@
       <!-- EFFECTS PANEL -->
       <views:EffectsPanel DataContext="{Binding EffectsPanel}"/>
     </Border>
-  </Grid>
+    </Grid>
+
+  </DockPanel>
 </Window>
