@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="View.SplashWindow"
+        Width="380" Height="240"
+        WindowDecorations="None"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent">
+
+  <Border Background="{DynamicResource ThemeBg0}" CornerRadius="16"
+          BorderBrush="{DynamicResource ThemeBorder0}" BorderThickness="1">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
+      <Image Source="/Assets/icon.png" Width="104" Height="104" />
+      <TextBlock Text="Luminary" FontSize="30" FontWeight="SemiBold" HorizontalAlignment="Center"
+                 Foreground="{DynamicResource ThemeText0}" />
+      <TextBlock Name="VersionText" FontSize="13" HorizontalAlignment="Center"
+                 Foreground="{DynamicResource ThemeText2}" />
+    </StackPanel>
+  </Border>
+</Window>

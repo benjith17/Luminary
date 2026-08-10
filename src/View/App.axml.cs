@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ViewModel;
 
@@ -46,10 +48,26 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            // Show the splash immediately, then build the (heavier) main window at a lower priority
+            // so the splash paints first. The splash closes once the main window is loaded AND a
+            // minimum display time has elapsed, whichever is later — so it never just flashes.
+            const long minSplashMs = 1000;
+            var clock = Stopwatch.StartNew();
+
+            var splash = new SplashWindow();
+            splash.Show();
+
+            Dispatcher.UIThread.Post(() =>
             {
-                DataContext = new MainWindowViewModel(),
-            };
+                var window = new MainWindow { DataContext = new MainWindowViewModel() };
+                desktop.MainWindow = window;
+                window.Loaded += (_, _) =>
+                {
+                    var remaining = TimeSpan.FromMilliseconds(System.Math.Max(0, minSplashMs - clock.ElapsedMilliseconds));
+                    DispatcherTimer.RunOnce(splash.Close, remaining);
+                };
+                window.Show();
+            }, DispatcherPriority.Background);
         }
 
         base.OnFrameworkInitializationCompleted();
