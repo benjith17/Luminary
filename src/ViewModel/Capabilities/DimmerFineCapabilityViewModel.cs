@@ -30,4 +30,7 @@ public partial class DimmerFineCapabilityViewModel : CapabilityViewModelBase
 
     public override byte[] Capture() => [(byte)(Value >> 8), (byte)(Value & 0xFF)];
     public override void Restore(byte[] values) => Value = (ushort)((values[0] << 8) | values[1]);
+
+    protected override FadeParam[] BuildFadeParams() =>
+        [new(Width: 2, FadeBehavior.Fade, v => Value = (ushort)v)];
 }

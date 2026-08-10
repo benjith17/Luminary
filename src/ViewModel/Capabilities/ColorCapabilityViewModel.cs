@@ -40,4 +40,11 @@ public partial class ColorCapabilityViewModel : CapabilityViewModelBase
 
     public override byte[] Capture() => [Red, Green, Blue];
     public override void Restore(byte[] values) { Red = values[0]; Green = values[1]; Blue = values[2]; }
+
+    protected override FadeParam[] BuildFadeParams() =>
+    [
+        new(Width: 1, FadeBehavior.Fade, v => Red   = (byte)v),
+        new(Width: 1, FadeBehavior.Fade, v => Green = (byte)v),
+        new(Width: 1, FadeBehavior.Fade, v => Blue  = (byte)v),
+    ];
 }

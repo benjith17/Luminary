@@ -47,4 +47,10 @@ public partial class PanTiltFineCapabilityViewModel : CapabilityViewModelBase
         Pan  = (ushort)((values[0] << 8) | values[1]);
         Tilt = (ushort)((values[2] << 8) | values[3]);
     }
+
+    protected override FadeParam[] BuildFadeParams() =>
+    [
+        new(Width: 2, FadeBehavior.Snap, v => Pan  = (ushort)v),
+        new(Width: 2, FadeBehavior.Snap, v => Tilt = (ushort)v),
+    ];
 }

@@ -33,4 +33,10 @@ public partial class PanTiltCapabilityViewModel : CapabilityViewModelBase
 
     public override byte[] Capture() => [Pan, Tilt];
     public override void Restore(byte[] values) { Pan = values[0]; Tilt = values[1]; }
+
+    protected override FadeParam[] BuildFadeParams() =>
+    [
+        new(Width: 1, FadeBehavior.Snap, v => Pan  = (byte)v),
+        new(Width: 1, FadeBehavior.Snap, v => Tilt = (byte)v),
+    ];
 }

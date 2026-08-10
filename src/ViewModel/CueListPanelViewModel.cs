@@ -19,6 +19,8 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
     [ObservableProperty]
     public partial CueViewModel? ActiveCue { get; set; }
 
+    private readonly CrossfadeEngine _crossfade = new();
+
     [RelayCommand]
     private void Go()
     {
@@ -121,16 +123,19 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
 
     private void Recall(CueViewModel cueVm)
     {
-        // Hard cut for now. When fading arrives, wrap this restore loop rather than
-        // replacing it — the snapshot-per-capability shape stays the same.
+        var targets = new List<(CapabilityViewModelBase Capability, byte[] Target)>();
+
         foreach (var snapshot in cueVm.Model.Fixtures)
         {
             var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Name == snapshot.FixtureName);
             if (fixtureVm is null) continue;
 
             foreach (var (capability, values) in fixtureVm.Capabilities.Zip(snapshot.CapabilityValues))
-                capability.Restore(values);
+                targets.Add((capability, values));
         }
+
+        // Crossfade from the current live state to the cue over its fade time (0 = hard cut).
+        _crossfade.Start(targets, cueVm.Model.FadeIn);
 
         foreach (var vm in Cues) vm.IsActive = false;
         cueVm.IsActive = true;

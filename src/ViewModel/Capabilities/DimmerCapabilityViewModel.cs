@@ -26,4 +26,7 @@ public partial class DimmerCapabilityViewModel : CapabilityViewModelBase
 
     public override byte[] Capture() => [Value];
     public override void Restore(byte[] values) => Value = values[0];
+
+    protected override FadeParam[] BuildFadeParams() =>
+        [new(Width: 1, FadeBehavior.Fade, v => Value = (byte)v)];
 }

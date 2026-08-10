@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ViewModel"
+             xmlns:conv="using:Avalonia.Data.Converters"
              x:Class="View.CueListPanel"
              x:DataType="vm:CueListPanelViewModel">
 
@@ -28,33 +29,55 @@
             Padding="8 6"
             BorderThickness="0 1 0 0"
             BorderBrush="{DynamicResource ThemeBorder0}">
-      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-        <Button Classes="themed"
-                Content="↑"
-                Command="{Binding MoveUpCommand}"
-                Padding="10 5"
-                FontSize="11" />
-        <Button Classes="themed"
-                Content="↓"
-                Command="{Binding MoveDownCommand}"
-                Padding="10 5"
-                FontSize="11" />
-        <Button Classes="themed"
-                Content="Delete"
-                Command="{Binding DeleteCommand}"
-                Padding="10 5"
-                FontSize="11" />
-        <Button Classes="themed"
-                Content="Record"
-                Command="{Binding RecordCommand}"
-                Padding="10 5"
-                FontSize="11" />
-        <Button Classes="themed"
-                Content="Go"
-                Command="{Binding GoCommand}"
-                Padding="10 5"
-                FontSize="11" />
-      </StackPanel>
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Left"
+                    Orientation="Horizontal"
+                    Spacing="4"
+                    VerticalAlignment="Center">
+          <TextBlock Text="Fade"
+                     Foreground="{DynamicResource ThemeText2}"
+                     FontSize="11"
+                     VerticalAlignment="Center" />
+          <TextBox Text="{Binding SelectedCue.FadeSeconds, Mode=TwoWay}"
+                   IsEnabled="{Binding SelectedCue, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
+                   Width="46"
+                   FontSize="11"
+                   Padding="4 2"
+                   MinHeight="0"
+                   VerticalContentAlignment="Center" />
+          <TextBlock Text="s"
+                     Foreground="{DynamicResource ThemeText2}"
+                     FontSize="11"
+                     VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+          <Button Classes="themed"
+                  Content="↑"
+                  Command="{Binding MoveUpCommand}"
+                  Padding="10 5"
+                  FontSize="11" />
+          <Button Classes="themed"
+                  Content="↓"
+                  Command="{Binding MoveDownCommand}"
+                  Padding="10 5"
+                  FontSize="11" />
+          <Button Classes="themed"
+                  Content="Delete"
+                  Command="{Binding DeleteCommand}"
+                  Padding="10 5"
+                  FontSize="11" />
+          <Button Classes="themed"
+                  Content="Record"
+                  Command="{Binding RecordCommand}"
+                  Padding="10 5"
+                  FontSize="11" />
+          <Button Classes="themed"
+                  Content="Go"
+                  Command="{Binding GoCommand}"
+                  Padding="10 5"
+                  FontSize="11" />
+        </StackPanel>
+      </DockPanel>
     </Border>
 
     <!-- Cue list -->
@@ -66,7 +89,7 @@
              DoubleTapped="OnCueDoubleTapped">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:CueViewModel">
-          <Grid ColumnDefinitions="3,40,*">
+          <Grid ColumnDefinitions="3,40,*,Auto">
             <!-- Active-on-stage accent bar -->
             <Border Grid.Column="0"
                     Width="3"
@@ -96,6 +119,13 @@
                        KeyDown="OnRenameKeyDown"
                        LostFocus="OnRenameLostFocus" />
             </Panel>
+            <TextBlock Grid.Column="3"
+                       Text="{Binding FadeDisplay}"
+                       Foreground="{DynamicResource ThemeText2}"
+                       FontSize="10"
+                       FontFamily="Monospace"
+                       VerticalAlignment="Center"
+                       Margin="8 0 4 0" />
           </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
