@@ -10,13 +10,15 @@ A desktop lighting control application for theatrical and live event lighting. L
 - Fixture model with pluggable capability types: dimmer, RGB color, pan/tilt (standard and fine-channel variants)
 - DMX universe model (512 channels per universe, configurable target IP)
 - Live Art-Net output over UDP at ~40 fps
-- Basic fixture list and capability editor UI
+- Fixture list and capability editor UI with custom level faders and an XY pan/tilt pad
 - Cue model with major/minor numbering, labels, fade times, and per-fixture snapshots
-- Cue list and effects panels (UI shell present)
+- Cue list editing: record (snapshots the live output), delete, reorder (renumbering), inline rename, and per-cue fade times — kept in numeric order at all times
+- Cue playback: a selected/active split (click selects, GO fires and advances), driven by a time-based crossfade engine
+- Per-property fade behaviour: parameters fade or snap during a crossfade, attributed on the capability
+- HTP/LTP merging: manual (fader) and playback (cue) layers combine into the DMX output per property — Highest- or Latest-Takes-Precedence — with the live cue value shown as an indicator on each fader and pad
 
 ### Not yet implemented
 - Show file save/load
-- Cue playback and crossfade engine
 - Fixture library / patch workflow
 - Group control
 - Effects engine
@@ -66,3 +68,9 @@ Luminary follows MVVM:
 - **ViewModel** — each UI panel has a corresponding ViewModel wired to Model state via observable properties.
 - **View** — three-column main window: fixture inventory (left), capability editor (center), effects/cue list (right).
 - **ArtNet** — `ArtNetService` reads universe channel state from `ShowService` and transmits Art-Net packets on a ~25 ms timer.
+
+### Value pipeline
+
+Each controllable value is a `CapabilityParameter` with two layers — a **manual** value (the fader/pad) and a **playback** value (cues) — that merge into the DMX output by that parameter's `MergeMode` (`Htp` = the larger of the two, `Ltp` = whichever changed most recently). The merged output is what the ArtNet service transmits, and recording a cue captures this output ("record what you see").
+
+Cue playback runs through `CrossfadeEngine`, a UI-thread timer (~40 fps) that interpolates each parameter's playback layer from the current on-stage output toward the cue's recorded value over the cue's fade time. Each parameter also carries a `FadeBehavior` (`Fade` = interpolate, `Snap` = jump immediately) so, for example, intensity can fade while position snaps.
