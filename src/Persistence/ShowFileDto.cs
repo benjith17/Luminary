@@ -30,6 +30,7 @@ public sealed class OutputDto
 public sealed class FixtureDto
 {
     public Guid Id { get; set; }
+    public int Number { get; set; }                         // user-facing fixture number
     public string Name { get; set; } = string.Empty;
     public string Personality { get; set; } = string.Empty; // resolved from the FixtureLibrary
     public byte Universe { get; set; }

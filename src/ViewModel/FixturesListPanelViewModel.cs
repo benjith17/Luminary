@@ -88,7 +88,8 @@ public partial class FixturesListPanelViewModel : ViewModelBase
         var label = string.IsNullOrWhiteSpace(def.Model) ? def.Name : def.Model;
         var fixture = new Fixture(UniqueName(label), NextFreeAddress(universeNumber, def), def)
         {
-            UniverseNumber = universeNumber
+            UniverseNumber = universeNumber,
+            Number = NextFreeNumber()
         };
 
         _showService.Fixtures.Add(fixture);
@@ -115,6 +116,15 @@ public partial class FixturesListPanelViewModel : ViewModelBase
         var vm = new FixtureListItemViewModel(fixture, _showService);
         vm.PatchChanged += RefreshOutput;
         return vm;
+    }
+
+    // Lowest positive fixture number not already in use.
+    private int NextFreeNumber()
+    {
+        var used = _showService.Fixtures.Select(f => f.Number).ToHashSet();
+        var n = 1;
+        while (used.Contains(n)) n++;
+        return n;
     }
 
     // Clears every universe and re-emits all fixtures' current output, so re-addressing or

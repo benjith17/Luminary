@@ -8,16 +8,36 @@ namespace ViewModel;
 public partial class FixtureListItemViewModel : ViewModelBase
 {
     private readonly Fixture _fixture;
+    private readonly ShowService _showService;
 
     public FixtureListItemViewModel(Fixture fixture, ShowService showService)
     {
         _fixture = fixture;
+        _showService = showService;
         Capabilities = new ObservableCollection<CapabilityViewModelBase>(
             fixture.FixtureType.Capabilities.Select(c => CreateCapabilityViewModel(c, fixture, showService))
         );
     }
 
     public Fixture Fixture => _fixture;
+
+    // User-facing fixture number. Kept unique across the rig: a clashing (or non-positive) value
+    // is rejected and the field reverts.
+    public int Number
+    {
+        get => _fixture.Number;
+        set
+        {
+            if (value == _fixture.Number) return;
+            if (value < 1 || _showService.Fixtures.Any(f => f != _fixture && f.Number == value))
+            {
+                OnPropertyChanged();
+                return;
+            }
+            _fixture.Number = value;
+            OnPropertyChanged();
+        }
+    }
 
     // Raised when a change affects channel assignment (address / universe) so the panel can
     // clear stale channels and re-emit output.

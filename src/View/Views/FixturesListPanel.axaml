@@ -27,11 +27,14 @@
              Padding="0 4 0 4">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:FixtureListItemViewModel">
-          <TextBlock Text="{Binding Name}"
-                     Foreground="{DynamicResource ThemeText0}"
-                     FontSize="12"
-                     VerticalAlignment="Center"
-                     TextTrimming="CharacterEllipsis" />
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Text="{Binding Number}" MinWidth="16"
+                       Foreground="{DynamicResource ThemeText2}" FontFamily="Monospace" FontSize="12"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding Name}"
+                       Foreground="{DynamicResource ThemeText0}" FontSize="12"
+                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </Grid>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

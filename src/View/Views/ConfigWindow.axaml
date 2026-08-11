@@ -100,10 +100,14 @@
                    Background="Transparent" BorderThickness="0" Padding="0 4">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:FixtureListItemViewModel">
-                <StackPanel>
-                  <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource ThemeText0}" />
-                  <TextBlock Text="{Binding PatchSummary}" FontSize="11" Foreground="{DynamicResource ThemeText2}" Margin="0 2 0 0" />
-                </StackPanel>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <TextBlock Grid.Column="0" Text="{Binding Number}" VerticalAlignment="Center" MinWidth="20"
+                             FontFamily="Monospace" FontSize="14" Foreground="{DynamicResource ThemeText1}" />
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource ThemeText0}" />
+                    <TextBlock Text="{Binding PatchSummary}" FontSize="11" Foreground="{DynamicResource ThemeText2}" Margin="0 2 0 0" />
+                  </StackPanel>
+                </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
@@ -115,20 +119,23 @@
             <TextBlock Text="{Binding SelectedFixture.Name}" FontSize="16" Foreground="{DynamicResource ThemeText0}" />
             <TextBlock Text="{Binding SelectedFixture.TypeName}" FontSize="12" Foreground="{DynamicResource ThemeText2}" Margin="0 4 0 22" />
 
-            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="14">
-              <TextBlock Grid.Row="0" Grid.Column="0" Text="Name" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
-              <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedFixture.Name, Mode=TwoWay}" FontSize="13" />
+            <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="14">
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="Number" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SelectedFixture.Number, Mode=TwoWay}" FontSize="13" />
 
-              <TextBlock Grid.Row="1" Grid.Column="0" Text="Type" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
-              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFixture.TypeName}" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText0}" FontSize="13" />
+              <TextBlock Grid.Row="1" Grid.Column="0" Text="Name" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFixture.Name, Mode=TwoWay}" FontSize="13" />
 
-              <TextBlock Grid.Row="2" Grid.Column="0" Text="Universe" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
-              <ComboBox Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch"
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="Type" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedFixture.TypeName}" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText0}" FontSize="13" />
+
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="Universe" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <ComboBox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch"
                         ItemsSource="{Binding UniverseNumbers}"
                         SelectedItem="{Binding SelectedFixture.UniverseNumber, Mode=TwoWay}" FontSize="13" />
 
-              <TextBlock Grid.Row="3" Grid.Column="0" Text="Address" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
-              <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFixture.Address, Mode=TwoWay}" FontSize="13" />
+              <TextBlock Grid.Row="4" Grid.Column="0" Text="Address" VerticalAlignment="Center" Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedFixture.Address, Mode=TwoWay}" FontSize="13" />
             </Grid>
           </StackPanel>
         </ScrollViewer>

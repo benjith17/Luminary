@@ -40,6 +40,7 @@ public sealed class JsonShowStore : IShowStore
         Fixtures = show.Fixtures.Select(f => new FixtureDto
         {
             Id = f.Id,
+            Number = f.Number,
             Name = f.Name,
             Personality = f.FixtureType.Name,
             Universe = f.UniverseNumber,
@@ -88,6 +89,15 @@ public sealed class JsonShowStore : IShowStore
             }).ToList()
         };
 
+        // Preserve stored fixture numbers; back-fill any that are missing (older files) with free ones.
+        var usedNumbers = dto.Fixtures.Where(f => f.Number > 0).Select(f => f.Number).ToHashSet();
+        int NextFreeNumber()
+        {
+            var n = 1;
+            while (!usedNumbers.Add(n)) n++;
+            return n;
+        }
+
         foreach (var f in dto.Fixtures)
         {
             // Personality may be unavailable (e.g. a plug-in that isn't installed) — skip it.
@@ -96,6 +106,7 @@ public sealed class JsonShowStore : IShowStore
             show.Fixtures.Add(new Fixture(f.Name, f.Address - 1, def)
             {
                 Id = f.Id,
+                Number = f.Number > 0 ? f.Number : NextFreeNumber(),
                 UniverseNumber = f.Universe
             });
         }
