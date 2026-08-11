@@ -10,6 +10,13 @@ public sealed class ShowFileDto
     public List<UniverseDto> Universes { get; set; } = [];
     public List<FixtureDto> Fixtures { get; set; } = [];
     public CueListDto CueList { get; set; } = new();
+    public List<MacroDto> Macros { get; set; } = [];
+}
+
+public sealed class MacroDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
 }
 
 public sealed class UniverseDto

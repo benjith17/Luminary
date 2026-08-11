@@ -10,7 +10,7 @@ public class ColorCapabilityViewModel : CapabilityViewModelBase
     public CapabilityParameter Blue { get; }
 
     public ColorCapabilityViewModel(ColorCapability capability, Fixture fixture, ShowService showService)
-        : base(capability.Name)
+        : base(capability)
     {
         Red = new CapabilityParameter(255, 1, MergeMode.Htp, FadeBehavior.Fade,
             v => showService.GetUniverse(fixture.UniverseNumber)

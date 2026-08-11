@@ -5,4 +5,7 @@ public class DimmerFineCapability(string name, int offset, int fineOffset, ushor
 {
     public int FineOffset { get; } = fineOffset;
     public ushort DefaultFine { get; } = defaultValue;
+
+    public override string MacroName => "Dimmer";
+    public override IReadOnlyList<string> MacroParameters { get; } = ["Level"];
 }

@@ -11,4 +11,7 @@ public class PanTiltFineCapability(
     public int    TiltFineOffset { get; set; } = tiltFineOffset;
     public ushort DefaultPan     { get; set; } = defaultPan;
     public ushort DefaultTilt    { get; set; } = defaultTilt;
+
+    public override string MacroName => "Position";
+    public override IReadOnlyList<string> MacroParameters { get; } = ["Pan", "Tilt"];
 }

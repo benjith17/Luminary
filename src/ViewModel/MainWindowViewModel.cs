@@ -29,6 +29,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial CueListPanelViewModel? CueListPanel { get; set; }
 
+    [ObservableProperty]
+    public partial MacrosWindowViewModel? MacrosPanel { get; set; }
+
     // Path of the show file currently open (null for a new / never-saved show).
     public string? CurrentPath { get; private set; }
 
@@ -78,6 +81,7 @@ public partial class MainWindowViewModel : ViewModelBase
         FixturesListPanel.SelectedFixture = FixturesListPanel.Fixtures.FirstOrDefault();
 
         CueListPanel = new CueListPanelViewModel(show, FixturesListPanel);
+        MacrosPanel = new MacrosWindowViewModel(show, FixturesListPanel, CueListPanel);
         FixtureEditor.SelectedFixture = FixturesListPanel.SelectedFixture;
 
         _artNet = new ArtNetService(show);

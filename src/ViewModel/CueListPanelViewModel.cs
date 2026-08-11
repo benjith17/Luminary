@@ -22,11 +22,35 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
     private readonly CrossfadeEngine _crossfade = new();
 
     [RelayCommand]
-    private void Go()
+    private void Go() => GoSelected();
+
+    // Fire the selected cue and advance. Returns false if there was nothing to fire (used by macros
+    // to report a "GO with no cue" problem). Safe to call from the macro interpreter (UI thread).
+    public bool GoSelected()
     {
         var target = SelectedCue ?? Cues.FirstOrDefault();
-        if (target is null) return;
+        if (target is null) return false;
+        FireAndAdvance(target);
+        return true;
+    }
 
+    // Jump to a cue by number and fire it. Minor == null selects the lowest-minor cue of that major.
+    // Returns false if no such cue exists.
+    public bool GoTo(int major, int? minor)
+    {
+        var target = minor is { } m
+            ? Cues.FirstOrDefault(c => c.Model.CueMajor == major && c.Model.CueMinor == m)
+            : Cues.Where(c => c.Model.CueMajor == major)
+                  .OrderBy(c => c.Model.CueMinor)
+                  .FirstOrDefault();
+
+        if (target is null) return false;
+        FireAndAdvance(target);
+        return true;
+    }
+
+    private void FireAndAdvance(CueViewModel target)
+    {
         Recall(target);
 
         // Advance selection to the next cue; at the end, keep it on the fired cue.

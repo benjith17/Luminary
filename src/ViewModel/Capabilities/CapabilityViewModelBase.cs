@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Model;
 
 namespace ViewModel;
 
@@ -11,9 +12,18 @@ public enum FadeBehavior
     Snap  // jump straight to the cue value the moment the cue is fired
 }
 
-public abstract class CapabilityViewModelBase(string name) : ViewModelBase
+public abstract class CapabilityViewModelBase(FixtureCapability capability) : ViewModelBase
 {
-    public string Name { get; } = name;
+    public string Name { get; } = capability.Name;
+
+    // Macro/DSL identity, carried from the model capability so the interpreter can address this
+    // capability by name (`set Color …`) and by parameter count (`@` arity inference).
+    public string MacroName { get; } = capability.MacroName;
+    public IReadOnlyList<string> MacroParameterNames { get; } = capability.MacroParameters;
+
+    // Public view of the parameters for the macro interpreter: read each parameter's Max (for
+    // percent scaling) and drive its Manual layer. Ordered to match MacroParameterNames.
+    public IReadOnlyList<CapabilityParameter> MacroParameters => Parameters;
 
     // A capability's controllable values, ordered to match the DMX snapshot layout: each 8-bit
     // parameter is one byte, each 16-bit parameter is two (MSB then LSB). This is where each

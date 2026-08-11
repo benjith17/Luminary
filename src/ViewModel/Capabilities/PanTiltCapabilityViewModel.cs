@@ -9,7 +9,7 @@ public class PanTiltCapabilityViewModel : CapabilityViewModelBase
     public CapabilityParameter Tilt { get; }
 
     public PanTiltCapabilityViewModel(PanTiltCapability capability, Fixture fixture, ShowService showService)
-        : base(capability.Name)
+        : base(capability)
     {
         Pan = new CapabilityParameter(255, 1, MergeMode.Ltp, FadeBehavior.Snap,
             v => showService.GetUniverse(fixture.UniverseNumber)

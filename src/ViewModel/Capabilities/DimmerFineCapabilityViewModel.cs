@@ -8,7 +8,7 @@ public class DimmerFineCapabilityViewModel : CapabilityViewModelBase
     public CapabilityParameter Intensity { get; }
 
     public DimmerFineCapabilityViewModel(DimmerFineCapability capability, Fixture fixture, ShowService showService)
-        : base(capability.Name)
+        : base(capability)
     {
         Intensity = new CapabilityParameter(
             max: 65535, width: 2, MergeMode.Htp, FadeBehavior.Fade,

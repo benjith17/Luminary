@@ -1,0 +1,74 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModel"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="View.MacrosWindow"
+        x:DataType="vm:MacrosWindowViewModel"
+        Icon="/Assets/icon.ico"
+        Title="Macros"
+        Width="880" Height="600"
+        MinWidth="620" MinHeight="420"
+        Background="{DynamicResource ThemeBg0}">
+
+  <Grid ColumnDefinitions="230,*">
+
+    <!-- ============ Macro list ============ -->
+    <DockPanel Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+      <Border DockPanel.Dock="Bottom" Padding="8 6"
+              BorderThickness="0 1 0 0" BorderBrush="{DynamicResource ThemeBorder0}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button Classes="themed" Content="+ Add" Command="{Binding AddMacroCommand}" Padding="10 5" FontSize="12" />
+          <Button Classes="themed" Content="Remove" Command="{Binding RemoveMacroCommand}" Padding="10 5" FontSize="12" />
+        </StackPanel>
+      </Border>
+      <ListBox ItemsSource="{Binding Macros}" SelectedItem="{Binding SelectedMacro}"
+               Background="Transparent" BorderThickness="0" Padding="0 4">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:MacroItemViewModel">
+            <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource ThemeText0}"
+                       TextTrimming="CharacterEllipsis" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <!-- ============ Editor ============ -->
+    <Grid Grid.Column="1" Margin="16"
+          IsVisible="{Binding SelectedMacro, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
+          RowDefinitions="Auto,*,Auto">
+
+      <!-- Name + transport -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0 0 0 12">
+        <TextBox Grid.Column="0" Text="{Binding SelectedMacro.Name, Mode=TwoWay}"
+                 FontSize="14" FontWeight="SemiBold" Watermark="Macro name" />
+        <Button Grid.Column="1" Classes="themed" Content="▶ Run" Margin="8 0 0 0" Padding="14 6"
+                Command="{Binding RunCommand}" />
+        <Button Grid.Column="2" Classes="themed" Content="■ Stop" Margin="6 0 0 0" Padding="14 6"
+                Command="{Binding StopCommand}" />
+      </Grid>
+
+      <!-- Source editor -->
+      <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" CornerRadius="4">
+        <TextBox Text="{Binding SelectedMacro.Source, Mode=TwoWay}"
+                 AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
+                 FontFamily="Cascadia Code,Consolas,Menlo,Monospace" FontSize="13"
+                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                 VerticalContentAlignment="Top"
+                 Background="Transparent" BorderThickness="0"
+                 Watermark="# One command per line, e.g.&#x0a;#   L1..8 @ 80% fade 2s&#x0a;#   goto 2&#x0a;#   wait 1s"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
+      </Border>
+
+      <!-- Status / diagnostics -->
+      <Border Grid.Row="2" Margin="0 12 0 0" Padding="10 8" MinHeight="64" MaxHeight="160"
+              Background="{DynamicResource Panel-Bg}" CornerRadius="4"
+              IsVisible="{Binding Output, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <SelectableTextBlock Text="{Binding Output}" FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                               FontSize="12" Foreground="{DynamicResource ThemeText1}" TextWrapping="Wrap" />
+        </ScrollViewer>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

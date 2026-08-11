@@ -61,7 +61,8 @@ public sealed class JsonShowStore : IShowStore
                     Values = s.CapabilityValues
                 }).ToList()
             }).ToList()
-        }
+        },
+        Macros = show.Macros.Select(m => new MacroDto { Name = m.Name, Source = m.Source }).ToList()
     };
 
     private static ShowService FromDto(ShowFileDto dto, FixtureLibrary library)
@@ -127,6 +128,8 @@ public sealed class JsonShowStore : IShowStore
                 }).ToList()
             }).ToList()
         };
+
+        show.Macros = dto.Macros.Select(m => new Macro { Name = m.Name, Source = m.Source }).ToList();
 
         return show;
     }

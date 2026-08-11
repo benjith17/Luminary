@@ -59,6 +59,7 @@
             <MenuItem Header="Save As…" Click="OnSaveAsClick" />
           </MenuItem>
           <MenuItem Header="Patch" Click="OnPatchClick" />
+          <MenuItem Header="Macros" Click="OnMacrosClick" />
         </Menu>
       </DockPanel>
     </Border>

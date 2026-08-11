@@ -10,4 +10,7 @@ public class ColorCapability(
     public int  BlueOffset    { get; set; } = blueOffset;
     public byte DefaultGreen  { get; set; } = defaultGreen;
     public byte DefaultBlue   { get; set; } = defaultBlue;
+
+    public override string MacroName => "Color";
+    public override IReadOnlyList<string> MacroParameters { get; } = ["R", "G", "B"];
 }

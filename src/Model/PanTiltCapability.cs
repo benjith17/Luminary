@@ -6,4 +6,7 @@ public class PanTiltCapability(string name, int panOffset, int tiltOffset, byte 
 {
     public int  TiltOffset   { get; set; } = tiltOffset;
     public byte DefaultTilt  { get; set; } = defaultTilt;
+
+    public override string MacroName => "Position";
+    public override IReadOnlyList<string> MacroParameters { get; } = ["Pan", "Tilt"];
 }

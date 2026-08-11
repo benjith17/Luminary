@@ -9,7 +9,7 @@ public class PanTiltFineCapabilityViewModel : CapabilityViewModelBase
     public CapabilityParameter Tilt { get; }
 
     public PanTiltFineCapabilityViewModel(PanTiltFineCapability capability, Fixture fixture, ShowService showService)
-        : base(capability.Name)
+        : base(capability)
     {
         Pan = new CapabilityParameter(65535, 2, MergeMode.Ltp, FadeBehavior.Snap,
             v =>

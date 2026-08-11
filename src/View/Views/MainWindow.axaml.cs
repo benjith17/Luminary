@@ -9,6 +9,7 @@ namespace View;
 public partial class MainWindow : Window
 {
     private ConfigWindow? _configWindow;
+    private MacrosWindow? _macrosWindow;
     private bool _forceClose;
 
     public MainWindow()
@@ -36,7 +37,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainWindowViewModel vm) return;
         if (!await ConfirmDiscardAsync(vm)) return;
 
-        CloseConfigWindow();
+        CloseToolWindows();
         vm.New();
     }
 
@@ -53,7 +54,7 @@ public partial class MainWindow : Window
         });
         if (files.Count == 0) return;
 
-        CloseConfigWindow();
+        CloseToolWindows();
         try
         {
             vm.Open(files[0].Path.LocalPath);
@@ -130,9 +131,31 @@ public partial class MainWindow : Window
         _configWindow.Show(this);
     }
 
-    private void CloseConfigWindow()
+    private void OnMacrosClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+
+        if (_macrosWindow is not null)
+        {
+            _macrosWindow.Activate();
+            return;
+        }
+
+        _macrosWindow = new MacrosWindow { DataContext = vm.MacrosPanel };
+        _macrosWindow.Closed += (_, _) =>
+        {
+            vm.MacrosPanel?.StopRun(); // don't let a run outlive its window
+            _macrosWindow = null;
+        };
+        _macrosWindow.Show(this);
+    }
+
+    // Closes the non-modal tool windows (used before swapping the show on New / Open).
+    private void CloseToolWindows()
     {
         _configWindow?.Close();
         _configWindow = null;
+        _macrosWindow?.Close();
+        _macrosWindow = null;
     }
 }
