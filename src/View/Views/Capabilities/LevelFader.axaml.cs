@@ -1,7 +1,9 @@
 using System;
 using System.ComponentModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using ViewModel;
 
 namespace View;
@@ -12,6 +14,26 @@ public partial class LevelFader : UserControl
 {
     private CapabilityParameter? _param;
 
+    // Optional label drawn inside the track (e.g. "R").
+    public static readonly StyledProperty<string?> LabelProperty =
+        AvaloniaProperty.Register<LevelFader, string?>(nameof(Label));
+
+    public string? Label
+    {
+        get => GetValue(LabelProperty);
+        set => SetValue(LabelProperty, value);
+    }
+
+    // Optional fill colour for the manual level (defaults to the neutral theme fill when unset).
+    public static readonly StyledProperty<IBrush?> AccentProperty =
+        AvaloniaProperty.Register<LevelFader, IBrush?>(nameof(Accent));
+
+    public IBrush? Accent
+    {
+        get => GetValue(AccentProperty);
+        set => SetValue(AccentProperty, value);
+    }
+
     public LevelFader()
     {
         InitializeComponent();
@@ -20,7 +42,35 @@ public partial class LevelFader : UserControl
         Track.SizeChanged += (_, _) => UpdateVisuals();
         Track.PointerPressed += OnPointerPressed;
         Track.PointerMoved += OnPointerMoved;
+
+        // Applied after attach so the fill brush isn't re-clobbered by theme resource resolution.
+        Loaded += (_, _) => ApplyAppearance();
     }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if (IsLoaded && (change.Property == LabelProperty || change.Property == AccentProperty))
+            ApplyAppearance();
+    }
+
+    // Label plus, only when the fader has an Accent, its colours: the fill (below the handle) is the
+    // full colour and the track (above the handle) a dimmed version. Applied after the theme's
+    // DynamicResource brushes have resolved, so it overrides them. Default faders are left untouched.
+    private void ApplyAppearance()
+    {
+        LabelText.Text = Label;
+
+        if (Accent is ISolidColorBrush accent)
+        {
+            Fill.Fill = accent;
+            Track.Background = Dim(accent.Color, 0.28);
+        }
+    }
+
+    private static SolidColorBrush Dim(Color c, double factor) =>
+        new(Color.FromRgb((byte)(c.R * factor), (byte)(c.G * factor), (byte)(c.B * factor)));
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {

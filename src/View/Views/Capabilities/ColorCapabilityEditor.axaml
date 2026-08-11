@@ -17,18 +17,9 @@
                  FontWeight="SemiBold"
                  Margin="0 0 0 8" />
       <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
-        <Grid RowDefinitions="*,Auto">
-          <views:LevelFader Grid.Row="0" DataContext="{Binding Red}" VerticalAlignment="Stretch" />
-          <TextBlock Grid.Row="1" Text="R" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" Margin="0 4 0 0" />
-        </Grid>
-        <Grid RowDefinitions="*,Auto">
-          <views:LevelFader Grid.Row="0" DataContext="{Binding Green}" VerticalAlignment="Stretch" />
-          <TextBlock Grid.Row="1" Text="G" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" Margin="0 4 0 0" />
-        </Grid>
-        <Grid RowDefinitions="*,Auto">
-          <views:LevelFader Grid.Row="0" DataContext="{Binding Blue}" VerticalAlignment="Stretch" />
-          <TextBlock Grid.Row="1" Text="B" Foreground="{DynamicResource ThemeText2}" FontSize="10" HorizontalAlignment="Center" Margin="0 4 0 0" />
-        </Grid>
+        <views:LevelFader DataContext="{Binding Red}"   Label="R" Accent="#E5484D" VerticalAlignment="Stretch" />
+        <views:LevelFader DataContext="{Binding Green}" Label="G" Accent="#46C265" VerticalAlignment="Stretch" />
+        <views:LevelFader DataContext="{Binding Blue}"  Label="B" Accent="#4D8CFF" VerticalAlignment="Stretch" />
       </StackPanel>
     </Grid>
   </Border>
