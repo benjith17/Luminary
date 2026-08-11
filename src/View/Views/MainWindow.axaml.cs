@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Settings;
 using ViewModel;
 
 namespace View;
@@ -11,10 +15,56 @@ public partial class MainWindow : Window
     private ConfigWindow? _configWindow;
     private MacrosWindow? _macrosWindow;
     private bool _forceClose;
+    private bool _keybindsAttached;
+
+    // App-level settings, set by the app before the window is shown (null at design time).
+    public SettingsService? Settings { get; set; }
 
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        AttachKeybindings();
+    }
+
+    // Wires configured gestures to their actions. Tunnelling, so a bound key beats a focused control;
+    // the controller itself skips keys while a text field is focused.
+    private void AttachKeybindings()
+    {
+        if (_keybindsAttached || Settings is null || DataContext is not MainWindowViewModel vm) return;
+        _keybindsAttached = true;
+
+        // CloseWindow is intentionally absent here: Ctrl/Cmd+W closes the tool windows, not the main one.
+        var controller = new KeybindingController(Settings, new Dictionary<Keybind, Action>
+        {
+            [Keybind.Go]                = () => vm.CueListPanel?.GoSelected(),
+            [Keybind.SelectPreviousCue] = () => vm.CueListPanel?.SelectPrevious(),
+            [Keybind.SelectNextCue]     = () => vm.CueListPanel?.SelectNext(),
+            [Keybind.Blackout]          = () => vm.Blackout = !vm.Blackout,
+            [Keybind.Patch]             = OpenPatch,
+            [Keybind.Fullscreen]        = ToggleFullscreen,
+        });
+
+        AddHandler(KeyDownEvent, controller.HandleKeyDown, RoutingStrategies.Tunnel);
+    }
+
+    private void ToggleFullscreen() =>
+        WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen;
+
+    // Attaches the "close window" gesture (Ctrl/Cmd+W) to a tool window so it closes on the keybind.
+    private void AttachCloseKeybind(Window window)
+    {
+        if (Settings is null) return;
+
+        var controller = new KeybindingController(Settings, new Dictionary<Keybind, Action>
+        {
+            [Keybind.CloseWindow] = () => window.Close()
+        });
+        window.AddHandler(KeyDownEvent, controller.HandleKeyDown, RoutingStrategies.Tunnel);
     }
 
     protected override async void OnClosing(WindowClosingEventArgs e)
@@ -116,7 +166,9 @@ public partial class MainWindow : Window
         };
     }
 
-    private void OnPatchClick(object? sender, RoutedEventArgs e)
+    private void OnPatchClick(object? sender, RoutedEventArgs e) => OpenPatch();
+
+    private void OpenPatch()
     {
         if (DataContext is not MainWindowViewModel vm) return;
 
@@ -128,6 +180,7 @@ public partial class MainWindow : Window
 
         _configWindow = new ConfigWindow { DataContext = vm.FixturesListPanel };
         _configWindow.Closed += (_, _) => _configWindow = null;
+        AttachCloseKeybind(_configWindow);
         _configWindow.Show(this);
     }
 
@@ -147,6 +200,7 @@ public partial class MainWindow : Window
             vm.MacrosPanel?.StopRun(); // don't let a run outlive its window
             _macrosWindow = null;
         };
+        AttachCloseKeybind(_macrosWindow);
         _macrosWindow.Show(this);
     }
 

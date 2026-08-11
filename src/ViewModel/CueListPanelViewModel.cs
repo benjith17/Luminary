@@ -49,6 +49,21 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
         return true;
     }
 
+    // Move the selection up/down without firing (for keyboard cue navigation). Clamps at the ends.
+    public void SelectPrevious()
+    {
+        if (Cues.Count == 0) return;
+        var index = SelectedCue is null ? 0 : Cues.IndexOf(SelectedCue) - 1;
+        SelectedCue = Cues[Math.Max(0, index)];
+    }
+
+    public void SelectNext()
+    {
+        if (Cues.Count == 0) return;
+        var index = SelectedCue is null ? 0 : Cues.IndexOf(SelectedCue) + 1;
+        SelectedCue = Cues[Math.Min(Cues.Count - 1, index)];
+    }
+
     private void FireAndAdvance(CueViewModel target)
     {
         Recall(target);

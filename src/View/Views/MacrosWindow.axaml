@@ -40,7 +40,7 @@
       <!-- Name + transport -->
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" Margin="0 0 0 12">
         <TextBox Grid.Column="0" Text="{Binding SelectedMacro.Name, Mode=TwoWay}"
-                 FontSize="14" FontWeight="SemiBold" Watermark="Macro name" />
+                 FontSize="14" FontWeight="SemiBold" PlaceholderText="Macro name" />
         <Button Grid.Column="1" Classes="themed" Content="▶ Run" Margin="8 0 0 0" Padding="14 6"
                 Command="{Binding RunCommand}" />
         <Button Grid.Column="2" Classes="themed" Content="■ Stop" Margin="6 0 0 0" Padding="14 6"
@@ -55,7 +55,7 @@
                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                  VerticalContentAlignment="Top"
                  Background="Transparent" BorderThickness="0"
-                 Watermark="# One command per line, e.g.&#x0a;#   L1..8 @ 80% fade 2s&#x0a;#   goto 2&#x0a;#   wait 1s"
+                 PlaceholderText="# One command per line, e.g.&#x0a;#   L1..8 @ 80% fade 2s&#x0a;#   goto 2&#x0a;#   wait 1s"
                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
                  ScrollViewer.VerticalScrollBarVisibility="Auto" />
       </Border>

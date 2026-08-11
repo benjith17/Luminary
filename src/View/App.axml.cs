@@ -7,6 +7,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Settings;
 using ViewModel;
 
 namespace View;
@@ -57,9 +58,16 @@ public partial class App : Application
             var splash = new SplashWindow();
             splash.Show();
 
+            // Machine-local settings (keybindings, …) — loaded once, shared across every show.
+            var settings = new SettingsService();
+
             Dispatcher.UIThread.Post(() =>
             {
-                var window = new MainWindow { DataContext = new MainWindowViewModel() };
+                var window = new MainWindow
+                {
+                    DataContext = new MainWindowViewModel(),
+                    Settings = settings
+                };
                 desktop.MainWindow = window;
                 window.Loaded += (_, _) =>
                 {
