@@ -11,6 +11,7 @@ public sealed class ArtNetService : IDisposable
     private readonly Dictionary<byte, V4Buffer> _v4 = [];        // Art-Net 4 per-universe frame buffer
     private ArtNet4Controller? _v4Controller;                    // shared v4 discovery/unicast subsystem
     private readonly System.Timers.Timer _timer;
+    private static readonly byte[] Zeros = new byte[512]; // sent in place of channel data during blackout
 
     public ArtNetService(ShowService showService)
     {
@@ -32,15 +33,18 @@ public sealed class ArtNetService : IDisposable
 
         foreach (var universe in universes)
         {
+            // During blackout, transmit zeros instead of the live channels (state is untouched).
+            var channels = _showService.Blackout ? Zeros : universe.Channels;
+
             switch (universe.Output)
             {
                 case ArtNetOutput when _senders.TryGetValue(universe.Number, out var endpoint):
-                    Array.Copy(universe.Channels, 0, endpoint.Sender.Dmx, 18, 512);
+                    Array.Copy(channels, 0, endpoint.Sender.Dmx, 18, 512);
                     endpoint.Sender.Send();
                     break;
 
                 case ArtNet4Output v4 when _v4Controller is { } controller && _v4.TryGetValue(universe.Number, out var buffer):
-                    buffer.Load(universe.Channels);
+                    buffer.Load(channels);
                     controller.Send(v4.ArtNetUniverse, buffer.Data, v4.ManualTargets, v4.Port);
                     break;
             }

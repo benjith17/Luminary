@@ -35,6 +35,18 @@ public partial class MainWindowViewModel : ViewModelBase
     // True when the show has changes that differ from the last saved/loaded state.
     public bool IsDirty => _store.Serialize(_show) != _savedSnapshot;
 
+    // Live output kill: zeros all transmitted channels while active; releasing restores the look.
+    public bool Blackout
+    {
+        get => _show.Blackout;
+        set
+        {
+            if (_show.Blackout == value) return;
+            _show.Blackout = value;
+            OnPropertyChanged();
+        }
+    }
+
     public MainWindowViewModel()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
@@ -71,6 +83,7 @@ public partial class MainWindowViewModel : ViewModelBase
         _artNet = new ArtNetService(show);
         CurrentPath = path;
         _savedSnapshot = _store.Serialize(show);
+        OnPropertyChanged(nameof(Blackout));
     }
 
     private void OnFixtureSelectionChanged(object? sender, PropertyChangedEventArgs e)

@@ -16,22 +16,52 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
+  <Window.Styles>
+    <!-- Blackout toggle: neutral when off, red when active -->
+    <Style Selector="ToggleButton.blackout">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText0}" />
+    </Style>
+    <Style Selector="ToggleButton.blackout /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Button-Bg}" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="ToggleButton.blackout:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Button-Hover}" />
+    </Style>
+    <Style Selector="ToggleButton.blackout:checked">
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="ToggleButton.blackout:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#C0392B" />
+    </Style>
+    <Style Selector="ToggleButton.blackout:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#D9503E" />
+    </Style>
+  </Window.Styles>
+
   <DockPanel>
 
     <!-- Menu bar -->
-    <Menu DockPanel.Dock="Top"
-          Background="{DynamicResource PanelHeader-Bg}"
-          BorderThickness="0 0 0 1"
-          BorderBrush="{DynamicResource ThemeBorder0}">
-      <MenuItem Header="File">
-        <MenuItem Header="New" Click="OnNewClick" />
-        <MenuItem Header="Open…" Click="OnOpenClick" />
-        <Separator />
-        <MenuItem Header="Save" Click="OnSaveClick" />
-        <MenuItem Header="Save As…" Click="OnSaveAsClick" />
-      </MenuItem>
-      <MenuItem Header="Patch" Click="OnPatchClick" />
-    </Menu>
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource PanelHeader-Bg}"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource ThemeBorder0}">
+      <DockPanel>
+        <ToggleButton DockPanel.Dock="Right" Classes="blackout" Content="Blackout"
+                      IsChecked="{Binding Blackout, Mode=TwoWay}"
+                      Margin="6 4" Padding="14 3" FontSize="12" VerticalAlignment="Center" />
+        <Menu Background="Transparent" BorderThickness="0">
+          <MenuItem Header="File">
+            <MenuItem Header="New" Click="OnNewClick" />
+            <MenuItem Header="Open…" Click="OnOpenClick" />
+            <Separator />
+            <MenuItem Header="Save" Click="OnSaveClick" />
+            <MenuItem Header="Save As…" Click="OnSaveAsClick" />
+          </MenuItem>
+          <MenuItem Header="Patch" Click="OnPatchClick" />
+        </Menu>
+      </DockPanel>
+    </Border>
 
     <Grid>
     <Grid.ColumnDefinitions>
