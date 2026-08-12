@@ -43,9 +43,10 @@ public abstract class CapabilityViewModelBase(FixtureCapability capability) : Vi
         {
             var start = Read(from, offset, param.Width);
             var target = Read(to, offset, param.Width);
-            param.Playback = param.Fade == FadeBehavior.Snap
+            var value = param.Fade == FadeBehavior.Snap
                 ? target
                 : (int)Math.Round(start + (target - start) * t);
+            param.SetPlayback(value); // marks playback latest even if the value is unchanged (LTP fix)
             param.PlaybackActive = true;
             offset += param.Width;
         }

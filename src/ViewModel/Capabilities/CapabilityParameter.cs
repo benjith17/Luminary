@@ -66,6 +66,24 @@ public partial class CapabilityParameter : ObservableObject
         OnPropertyChanged(nameof(PlaybackFraction));
     }
 
+    // Drives the playback layer from a cue recall / crossfade. Always marks the playback layer as the
+    // most-recent source (so an LTP parameter's output switches to it) and re-emits — even when the
+    // value is unchanged. Assigning Playback alone is not enough: the generated setter skips equal
+    // values, so re-recalling a value that already equals Playback after a manual move would leave an
+    // LTP parameter stuck on the manual value.
+    public void SetPlayback(int value)
+    {
+        if (Playback != value)
+        {
+            Playback = value; // OnPlaybackChanged flips _manualIsLatest and pushes
+        }
+        else
+        {
+            _manualIsLatest = false;
+            Push();
+        }
+    }
+
     private void Push()
     {
         _writeOutput(Output);
