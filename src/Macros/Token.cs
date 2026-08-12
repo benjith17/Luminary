@@ -13,6 +13,7 @@ public enum TokenType
     Dot,        // .
     DotDot,     // ..
     Underscore, // _  (leave-unchanged placeholder)
+    Dollar,     // $  (input-value placeholder)
     Newline,
     Eof
 }

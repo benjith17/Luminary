@@ -28,6 +28,16 @@ public sealed record WaitStatement(TimeSpan Duration) : Statement;
 // `repeat 4` … `end` — run Body Count times.
 public sealed record RepeatStatement(int Count, IReadOnlyList<Statement> Body) : Statement;
 
+// `blackout on` / `blackout off` / `blackout toggle` (bare `blackout` = toggle).
+public sealed record BlackoutStatement(BlackoutMode Mode) : Statement;
+
+public enum BlackoutMode { On, Off, Toggle }
+
+// `next` / `prev` — move the cue selection without firing (like the Up/Down keybinds).
+public sealed record SelectStatement(SelectDirection Direction) : Statement;
+
+public enum SelectDirection { Next, Previous }
+
 // A value-setting line: `L1..8 @ 80% fade 3s` or `L3 set Color 60% 100% 80%`.
 public sealed record SetStatement(
     IReadOnlyList<SelectorTerm> Selector,
@@ -66,3 +76,7 @@ public sealed record PercentValue(int Percent) : ValueExpr;
 
 // `128` — written raw, clamped to the parameter's Max.
 public sealed record RawValue(int Value) : ValueExpr;
+
+// `$` — the driving input's value (a MIDI fader, a button). Resolves to that value scaled to the
+// parameter's full range, so a control at its maximum yields the parameter's Max (255 / 100%).
+public sealed record PlaceholderValue : ValueExpr;

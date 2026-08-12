@@ -66,6 +66,7 @@ public sealed class Lexer(string source)
             case '+': Advance(); return new Token(TokenType.Plus, "+", 0, startLine, startCol);
             case '%': Advance(); return new Token(TokenType.Percent, "%", 0, startLine, startCol);
             case '_': Advance(); return new Token(TokenType.Underscore, "_", 0, startLine, startCol);
+            case '$': Advance(); return new Token(TokenType.Dollar, "$", 0, startLine, startCol);
             case '.':
                 Advance();
                 if (_pos < _src.Length && _src[_pos] == '.')

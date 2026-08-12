@@ -14,6 +14,13 @@ public interface IMacroHost
     // Jump to a cue by number and fire it.
     void GoTo(GotoStatement statement, Action<Diagnostic> report);
 
-    // Apply a value command to every fixture in the selector.
-    void ApplySet(SetStatement statement, Action<Diagnostic> report);
+    // Apply a value command to every fixture in the selector. `input` supplies the value for any
+    // `$` placeholder in the command.
+    void ApplySet(SetStatement statement, MacroInput input, Action<Diagnostic> report);
+
+    // Set / clear / toggle blackout.
+    void SetBlackout(BlackoutStatement statement, Action<Diagnostic> report);
+
+    // Move the cue selection (next / previous) without firing.
+    void Select(SelectStatement statement, Action<Diagnostic> report);
 }

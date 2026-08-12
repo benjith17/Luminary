@@ -71,6 +71,15 @@ public sealed class Parser
                 case "repeat":
                     Advance();
                     return ParseRepeat(line);
+                case "blackout":
+                    Advance();
+                    return ParseBlackout(line);
+                case "next":
+                    Advance();
+                    return Terminate(new SelectStatement(SelectDirection.Next) { Line = line });
+                case "prev":
+                    Advance();
+                    return Terminate(new SelectStatement(SelectDirection.Previous) { Line = line });
                 case "end":
                     Advance();
                     Error(tok, "'end' has no matching 'repeat'.");
@@ -119,6 +128,28 @@ public sealed class Parser
             minor = Advance().Value;
         }
         return (major, minor);
+    }
+
+    // ---- blackout --------------------------------------------------------------------------
+
+    private Statement? ParseBlackout(int line)
+    {
+        // Optional mode word; bare `blackout` toggles.
+        var mode = BlackoutMode.Toggle;
+        if (Check(TokenType.Ident))
+        {
+            switch (Peek().Text.ToLowerInvariant())
+            {
+                case "on":     Advance(); mode = BlackoutMode.On; break;
+                case "off":    Advance(); mode = BlackoutMode.Off; break;
+                case "toggle": Advance(); mode = BlackoutMode.Toggle; break;
+                default:
+                    Error(Peek(), $"Expected 'on', 'off' or 'toggle' after 'blackout', but found {Describe(Peek())}.");
+                    SkipToLineEnd();
+                    return null;
+            }
+        }
+        return Terminate(new BlackoutStatement(mode) { Line = line });
     }
 
     // ---- wait ------------------------------------------------------------------------------
@@ -329,6 +360,11 @@ public sealed class Parser
                 Advance();
                 values.Add(new KeepValue());
             }
+            else if (Check(TokenType.Dollar))
+            {
+                Advance();
+                values.Add(new PlaceholderValue());
+            }
             else if (Check(TokenType.Number))
             {
                 var n = Advance().Value;
@@ -404,6 +440,7 @@ public sealed class Parser
         TokenType.Dot     => "'.'",
         TokenType.DotDot  => "'..'",
         TokenType.Underscore => "'_'",
+        TokenType.Dollar  => "'$'",
         _                 => $"'{t.Text}'"
     };
 }

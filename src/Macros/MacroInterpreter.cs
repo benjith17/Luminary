@@ -2,6 +2,15 @@ namespace Macros;
 
 public sealed record MacroRunResult(bool Completed, IReadOnlyList<Diagnostic> Diagnostics);
 
+// The scalar a driving input feeds into a run: the value the `$` placeholder resolves to, as a
+// percentage (0–100). None when a run has no input (e.g. the Macros window's Run button).
+public readonly record struct MacroInput(double? Percent)
+{
+    public static readonly MacroInput None = new((double?)null);
+
+    public static MacroInput FromPercent(double percent) => new(percent);
+}
+
 // Walks a parsed program and drives the host. Effects (go/goto/set) are dispatched to the host and
 // are non-blocking — a cue's or a set's fade runs in the background while the script moves on.
 // Only `wait` blocks, and it's the sequencing primitive. Runtime problems are collected, not thrown.
@@ -10,7 +19,8 @@ public sealed record MacroRunResult(bool Completed, IReadOnlyList<Diagnostic> Di
 // every host call and every resumption after a wait lands back on the UI thread.
 public static class MacroInterpreter
 {
-    public static async Task<MacroRunResult> RunAsync(MacroProgram program, IMacroHost host, CancellationToken ct)
+    public static async Task<MacroRunResult> RunAsync(
+        MacroProgram program, IMacroHost host, MacroInput input, CancellationToken ct)
     {
         var diagnostics = new List<Diagnostic>();
         void Report(Diagnostic d) => diagnostics.Add(d);
@@ -18,7 +28,7 @@ public static class MacroInterpreter
         var completed = true;
         try
         {
-            await RunBlock(program.Statements, host, Report, ct);
+            await RunBlock(program.Statements, host, input, Report, ct);
         }
         catch (OperationCanceledException)
         {
@@ -28,7 +38,7 @@ public static class MacroInterpreter
     }
 
     private static async Task RunBlock(
-        IReadOnlyList<Statement> statements, IMacroHost host, Action<Diagnostic> report, CancellationToken ct)
+        IReadOnlyList<Statement> statements, IMacroHost host, MacroInput input, Action<Diagnostic> report, CancellationToken ct)
     {
         foreach (var statement in statements)
         {
@@ -44,7 +54,15 @@ public static class MacroInterpreter
                     break;
 
                 case SetStatement set:
-                    host.ApplySet(set, report);
+                    host.ApplySet(set, input, report);
+                    break;
+
+                case BlackoutStatement blackout:
+                    host.SetBlackout(blackout, report);
+                    break;
+
+                case SelectStatement select:
+                    host.Select(select, report);
                     break;
 
                 case WaitStatement wait:
@@ -57,7 +75,7 @@ public static class MacroInterpreter
                         ct.ThrowIfCancellationRequested();
                         // Yield each iteration so a wait-free loop can't freeze the UI or outrun Stop.
                         await Task.Yield();
-                        await RunBlock(repeat.Body, host, report, ct);
+                        await RunBlock(repeat.Body, host, input, report, ct);
                     }
                     break;
             }

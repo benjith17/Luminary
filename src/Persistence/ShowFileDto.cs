@@ -11,12 +11,30 @@ public sealed class ShowFileDto
     public List<FixtureDto> Fixtures { get; set; } = [];
     public CueListDto CueList { get; set; } = new();
     public List<MacroDto> Macros { get; set; } = [];
+    public List<BindingDto> Bindings { get; set; } = [];
 }
 
 public sealed class MacroDto
 {
     public string Name { get; set; } = string.Empty;
     public string Source { get; set; } = string.Empty;
+}
+
+public sealed class BindingDto
+{
+    public string Name { get; set; } = string.Empty;
+    public BindingTriggerDto Trigger { get; set; } = new();
+    public string Action { get; set; } = string.Empty;
+}
+
+public sealed class BindingTriggerDto
+{
+    public string Kind { get; set; } = "key";
+    public string? Gesture { get; set; }
+    public string? Device { get; set; }
+    public int? Channel { get; set; }
+    public string? Message { get; set; }
+    public int? Number { get; set; }
 }
 
 public sealed class UniverseDto

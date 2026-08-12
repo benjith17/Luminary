@@ -8,7 +8,11 @@ namespace ViewModel;
 // Executes macro effects against the live show: resolves fixture numbers and capabilities, applies
 // values to the manual layer (instantly or via a background fade), and drives the cue list for
 // go/goto. Owned by the Macros window; one per run is fine. All calls arrive on the UI thread.
-public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelViewModel cues) : IMacroHost
+public sealed class MacroHost(
+    FixturesListPanelViewModel fixtures,
+    CueListPanelViewModel cues,
+    Func<bool> getBlackout,
+    Action<bool> setBlackout) : IMacroHost
 {
     private readonly ManualFadeEngine _fades = new();
 
@@ -27,8 +31,27 @@ public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelV
             report(new Diagnostic(statement.Line, 0, $"No cue {CueRef(statement)}."));
     }
 
-    public void ApplySet(SetStatement statement, Action<Diagnostic> report)
+    public void SetBlackout(BlackoutStatement statement, Action<Diagnostic> report) =>
+        setBlackout(statement.Mode switch
+        {
+            BlackoutMode.On  => true,
+            BlackoutMode.Off => false,
+            _                => !getBlackout() // toggle
+        });
+
+    public void Select(SelectStatement statement, Action<Diagnostic> report)
     {
+        if (statement.Direction == SelectDirection.Next) cues.SelectNext();
+        else cues.SelectPrevious();
+    }
+
+    public void ApplySet(SetStatement statement, MacroInput input, Action<Diagnostic> report)
+    {
+        // A `$` with no driving input (e.g. a manual Run) resolves to 0 — flag it once so it's clear.
+        if (input.Percent is null && statement.Values.Any(v => v is PlaceholderValue))
+            report(new Diagnostic(statement.Line, 0,
+                "'$' has no input value here; 0 is used (it's filled by a fader/button when this macro is bound to an input)."));
+
         foreach (var number in ExpandSelector(statement.Selector))
         {
             var fixture = fixtures.Fixtures.FirstOrDefault(f => f.Number == number);
@@ -41,7 +64,7 @@ public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelV
             var capability = ResolveCapability(fixture, statement, report);
             if (capability is null) continue;
 
-            ApplyValues(capability, statement);
+            ApplyValues(capability, statement, input);
         }
     }
 
@@ -107,8 +130,8 @@ public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelV
     }
 
     // Writes values positionally onto the capability's parameters. '_' leaves a parameter untouched;
-    // a fade animates the manual layer, otherwise it snaps.
-    private void ApplyValues(CapabilityViewModelBase capability, SetStatement statement)
+    // '$' resolves to the driving input; a fade animates the manual layer, otherwise it snaps.
+    private void ApplyValues(CapabilityViewModelBase capability, SetStatement statement, MacroInput input)
     {
         var count = Math.Min(statement.Values.Count, capability.MacroParameters.Count);
         for (var i = 0; i < count; i++)
@@ -118,9 +141,10 @@ public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelV
             var parameter = capability.MacroParameters[i];
             var target = statement.Values[i] switch
             {
-                PercentValue p => (int)Math.Round(Math.Clamp(p.Percent, 0, 100) / 100.0 * parameter.Max),
-                RawValue r     => Math.Clamp(r.Value, 0, parameter.Max),
-                _              => parameter.Manual
+                PercentValue p   => Scale(p.Percent, parameter.Max),
+                RawValue r       => Math.Clamp(r.Value, 0, parameter.Max),
+                PlaceholderValue => Scale(input.Percent ?? 0, parameter.Max),
+                _                => parameter.Manual
             };
 
             if (statement.Fade is { } fade && fade > TimeSpan.Zero)
@@ -134,6 +158,10 @@ public sealed class MacroHost(FixturesListPanelViewModel fixtures, CueListPanelV
             }
         }
     }
+
+    // Scales a 0–100 percentage to a parameter's full range (so 100% → Max).
+    private static int Scale(double percent, int max) =>
+        (int)Math.Round(Math.Clamp(percent, 0, 100) / 100.0 * max);
 
     private static string CueRef(GotoStatement s) => s.Minor is { } m ? $"{s.Major}.{m}" : s.Major.ToString();
     private static string Plural(int n) => n == 1 ? "" : "s";

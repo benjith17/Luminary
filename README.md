@@ -23,6 +23,7 @@ A desktop lighting control application for theatrical and live event lighting. L
 - Macro scripting: a small, line-oriented DSL for firing cues and setting fixtures, edited and run from a **Macros** window — with `wait`/`fade` timing, fixture ranges, `repeat` loops, live diagnostics, and Run/Stop (see [Macro scripting](#macro-scripting))
 - Blackout: a live output kill that transmits zeros while leaving the underlying look intact, so releasing it instantly restores the stage
 - Show files: JSON save/load (`.lum`) behind a `ShowStore` abstraction — New / Open / Save / Save As, stable fixture IDs, saved macros, and unsaved-changes prompts on new / open / quit
+- Configurable keyboard shortcuts — GO, cue navigation, blackout, open Patch, fullscreen, close window — stored in a machine-local settings file, with cross-platform Cmd/Ctrl handling
 - App icon and a startup splash screen
 
 ### Not yet implemented
@@ -31,8 +32,7 @@ A desktop lighting control application for theatrical and live event lighting. L
 - External fixture personalities (planned via plug-in DLLs)
 - Group control
 - Effects engine
-- Keybinding
-- Midi controller input
+- MIDI controller input
 
 ## Tech Stack
 

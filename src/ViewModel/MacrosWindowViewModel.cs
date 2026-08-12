@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -33,10 +34,10 @@ public partial class MacrosWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial string Output { get; set; } = "";
 
-    public MacrosWindowViewModel(ShowService show, FixturesListPanelViewModel fixtures, CueListPanelViewModel cues)
+    public MacrosWindowViewModel(ShowService show, MacroHost host)
     {
         _show = show;
-        _host = new MacroHost(fixtures, cues);
+        _host = host;
         Macros = new ObservableCollection<MacroItemViewModel>(show.Macros.Select(m => new MacroItemViewModel(m)));
         SelectedMacro = Macros.FirstOrDefault();
     }
@@ -79,7 +80,8 @@ public partial class MacrosWindowViewModel : ViewModelBase
         Output = "Running…";
         try
         {
-            var result = await MacroInterpreter.RunAsync(program, _host, _cts.Token);
+            // A manual run has no driving input, so `$` resolves to 0 (with a diagnostic).
+            var result = await MacroInterpreter.RunAsync(program, _host, MacroInput.None, _cts.Token);
 
             if (!result.Completed)
             {

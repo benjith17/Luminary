@@ -32,6 +32,10 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial MacrosWindowViewModel? MacrosPanel { get; set; }
 
+    // App-level macro host driving the live show — shared by the Macros window and (later) input
+    // bindings, so every input source runs macros against the same fixtures / cues / blackout.
+    public MacroHost? MacroHost { get; private set; }
+
     // Path of the show file currently open (null for a new / never-saved show).
     public string? CurrentPath { get; private set; }
 
@@ -81,7 +85,10 @@ public partial class MainWindowViewModel : ViewModelBase
         FixturesListPanel.SelectedFixture = FixturesListPanel.Fixtures.FirstOrDefault();
 
         CueListPanel = new CueListPanelViewModel(show, FixturesListPanel);
-        MacrosPanel = new MacrosWindowViewModel(show, FixturesListPanel, CueListPanel);
+        // Blackout is routed through this VM's property so macro-driven changes keep the toggle in sync.
+        MacroHost = new MacroHost(FixturesListPanel, CueListPanel,
+            getBlackout: () => Blackout, setBlackout: v => Blackout = v);
+        MacrosPanel = new MacrosWindowViewModel(show, MacroHost);
         FixtureEditor.SelectedFixture = FixturesListPanel.SelectedFixture;
 
         _artNet = new ArtNetService(show);

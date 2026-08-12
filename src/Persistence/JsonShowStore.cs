@@ -62,7 +62,21 @@ public sealed class JsonShowStore : IShowStore
                 }).ToList()
             }).ToList()
         },
-        Macros = show.Macros.Select(m => new MacroDto { Name = m.Name, Source = m.Source }).ToList()
+        Macros = show.Macros.Select(m => new MacroDto { Name = m.Name, Source = m.Source }).ToList(),
+        Bindings = show.Bindings.Select(b => new BindingDto
+        {
+            Name = b.Name,
+            Action = b.Action,
+            Trigger = new BindingTriggerDto
+            {
+                Kind = b.Trigger.Kind,
+                Gesture = b.Trigger.Gesture,
+                Device = b.Trigger.Device,
+                Channel = b.Trigger.Channel,
+                Message = b.Trigger.Message,
+                Number = b.Trigger.Number
+            }
+        }).ToList()
     };
 
     private static ShowService FromDto(ShowFileDto dto, FixtureLibrary library)
@@ -130,6 +144,21 @@ public sealed class JsonShowStore : IShowStore
         };
 
         show.Macros = dto.Macros.Select(m => new Macro { Name = m.Name, Source = m.Source }).ToList();
+
+        show.Bindings = dto.Bindings.Select(b => new Binding
+        {
+            Name = b.Name,
+            Action = b.Action,
+            Trigger = new BindingTrigger
+            {
+                Kind = b.Trigger.Kind,
+                Gesture = b.Trigger.Gesture,
+                Device = b.Trigger.Device,
+                Channel = b.Trigger.Channel,
+                Message = b.Trigger.Message,
+                Number = b.Trigger.Number
+            }
+        }).ToList();
 
         return show;
     }
