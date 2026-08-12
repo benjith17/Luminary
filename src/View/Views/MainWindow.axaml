@@ -60,6 +60,8 @@
           </MenuItem>
           <MenuItem Header="Patch" Click="OnPatchClick" />
           <MenuItem Header="Macros" Click="OnMacrosClick" />
+          <MenuItem Header="Bindings" Click="OnBindingsClick" />
+          <MenuItem Header="MIDI" Click="OnMidiClick" />
         </Menu>
       </DockPanel>
     </Border>

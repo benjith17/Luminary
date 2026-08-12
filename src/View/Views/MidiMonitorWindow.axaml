@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModel"
+        x:Class="View.MidiMonitorWindow"
+        x:DataType="vm:MidiMonitorViewModel"
+        Icon="/Assets/icon.ico"
+        Title="MIDI Monitor"
+        Width="520" Height="560"
+        MinWidth="360" MinHeight="300"
+        Background="{DynamicResource ThemeBg0}">
+
+  <DockPanel Margin="0">
+
+    <Border DockPanel.Dock="Top" Background="{DynamicResource Panel-Bg}" Padding="14 10"
+            BorderThickness="0 0 0 1" BorderBrush="{DynamicResource ThemeBorder0}">
+      <StackPanel Spacing="2">
+        <TextBlock Text="Inputs" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" />
+        <TextBlock Text="{Binding Devices}" FontSize="12" Foreground="{DynamicResource ThemeText0}" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <TextBlock DockPanel.Dock="Bottom" Margin="14 8"
+               Text="Move a fader or press a pad — messages appear newest-first. Use these numbers to author bindings."
+               FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource ThemeText2}" />
+
+    <ListBox ItemsSource="{Binding Messages}" Background="Transparent" BorderThickness="0" Padding="6 4">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="x:String">
+          <TextBlock Text="{Binding}" FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                     FontSize="12" Foreground="{DynamicResource ThemeText1}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+  </DockPanel>
+</Window>

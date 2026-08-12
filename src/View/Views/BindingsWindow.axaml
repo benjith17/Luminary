@@ -1,0 +1,113 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModel"
+        xmlns:conv="using:Avalonia.Data.Converters"
+        x:Class="View.BindingsWindow"
+        x:DataType="vm:BindingsWindowViewModel"
+        Icon="/Assets/icon.ico"
+        Title="Bindings"
+        Width="900" Height="620"
+        MinWidth="680" MinHeight="440"
+        Background="{DynamicResource ThemeBg0}">
+
+  <Grid ColumnDefinitions="250,*">
+
+    <!-- ============ Binding list ============ -->
+    <DockPanel Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+      <Border DockPanel.Dock="Bottom" Padding="8 6"
+              BorderThickness="0 1 0 0" BorderBrush="{DynamicResource ThemeBorder0}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button Classes="themed" Content="+ Add" Command="{Binding AddBindingCommand}" Padding="10 5" FontSize="12" />
+          <Button Classes="themed" Content="Remove" Command="{Binding RemoveBindingCommand}" Padding="10 5" FontSize="12" />
+        </StackPanel>
+      </Border>
+      <ListBox ItemsSource="{Binding Bindings}" SelectedItem="{Binding SelectedBinding}"
+               Background="Transparent" BorderThickness="0" Padding="0 4">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:BindingItemViewModel">
+            <StackPanel>
+              <TextBlock Text="{Binding Name}" FontSize="13" Foreground="{DynamicResource ThemeText0}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding Summary}" FontSize="11" Foreground="{DynamicResource ThemeText2}"
+                         Margin="0 2 0 0" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <!-- ============ Editor (context stays the window VM so Learn is reachable) ============ -->
+    <ScrollViewer Grid.Column="1"
+                  IsVisible="{Binding SelectedBinding, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+      <StackPanel Margin="22 20" Spacing="16">
+
+        <!-- Name -->
+        <StackPanel Spacing="5">
+          <TextBlock Text="NAME" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" />
+          <TextBox Text="{Binding SelectedBinding.Name, Mode=TwoWay}" FontSize="14" />
+        </StackPanel>
+
+        <!-- Trigger -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="TRIGGER" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" />
+
+          <Grid ColumnDefinitions="90,*">
+            <TextBlock Grid.Column="0" Text="Type" VerticalAlignment="Center"
+                       Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding SelectedBinding.Kinds}" SelectedItem="{Binding SelectedBinding.Kind}" />
+          </Grid>
+
+          <!-- key -->
+          <Grid ColumnDefinitions="90,*" IsVisible="{Binding SelectedBinding.IsKey}">
+            <TextBlock Grid.Column="0" Text="Gesture" VerticalAlignment="Center"
+                       Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+            <TextBox Grid.Column="1" Text="{Binding SelectedBinding.Gesture, Mode=TwoWay}"
+                     PlaceholderText="e.g. Ctrl+G" FontSize="13" />
+          </Grid>
+
+          <!-- midi -->
+          <StackPanel IsVisible="{Binding SelectedBinding.IsMidi}" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Button Classes="themed" Content="{Binding LearnLabel}" Command="{Binding LearnCommand}" Padding="12 6" />
+              <TextBlock Text="{Binding SelectedBinding.Device}" VerticalAlignment="Center"
+                         Foreground="{DynamicResource ThemeText2}" FontSize="12" />
+            </StackPanel>
+            <Grid ColumnDefinitions="90,70,90,90,90,70" VerticalAlignment="Center">
+              <TextBlock Grid.Column="0" Text="Channel" VerticalAlignment="Center"
+                         Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Column="1" Text="{Binding SelectedBinding.Channel, Mode=TwoWay}" FontSize="13" />
+              <TextBlock Grid.Column="2" Text="Message" VerticalAlignment="Center" Margin="14 0 0 0"
+                         Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <ComboBox Grid.Column="3" HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding SelectedBinding.MessageKinds}" SelectedItem="{Binding SelectedBinding.Message}" />
+              <TextBlock Grid.Column="4" Text="Number" VerticalAlignment="Center" Margin="14 0 0 0"
+                         Foreground="{DynamicResource ThemeText1}" FontSize="12" />
+              <TextBox Grid.Column="5" Text="{Binding SelectedBinding.Number, Mode=TwoWay}" FontSize="13" />
+            </Grid>
+            <CheckBox IsChecked="{Binding SelectedBinding.IgnoreZero}"
+                      Content="Ignore value 0 (e.g. a CC button's release)" FontSize="12" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Action -->
+        <StackPanel Spacing="5">
+          <TextBlock Text="ACTION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource ThemeText2}" />
+          <Border BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" CornerRadius="4" MinHeight="120">
+            <TextBox Text="{Binding SelectedBinding.Action, Mode=TwoWay}"
+                     AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
+                     FontFamily="Cascadia Code,Consolas,Menlo,Monospace" FontSize="13"
+                     Background="Transparent" BorderThickness="0"
+                     VerticalContentAlignment="Top"
+                     PlaceholderText="Macro to run, e.g.  L1 @ $   (use $ for the control's value)"
+                     ScrollViewer.HorizontalScrollBarVisibility="Auto" />
+          </Border>
+          <TextBlock Text="{Binding SelectedBinding.ActionStatus}" FontSize="11"
+                     Foreground="#E5484D" TextWrapping="Wrap"
+                     IsVisible="{Binding SelectedBinding.ActionStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

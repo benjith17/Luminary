@@ -35,6 +35,7 @@ public sealed class BindingTriggerDto
     public int? Channel { get; set; }
     public string? Message { get; set; }
     public int? Number { get; set; }
+    public bool IgnoreZero { get; set; }
 }
 
 public sealed class UniverseDto

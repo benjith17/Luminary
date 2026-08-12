@@ -24,4 +24,8 @@ public sealed class BindingTrigger
     public int? Channel { get; set; }           // 1–16
     public string? Message { get; set; }        // "note" | "cc"
     public int? Number { get; set; }            // note number or CC number
+
+    // When true, MIDI messages with value 0 are ignored — e.g. a CC button that sends 127 on press
+    // and 0 on release fires only on press. Leave off for faders, which legitimately reach 0.
+    public bool IgnoreZero { get; set; }
 }

@@ -3,6 +3,7 @@ using ArtNet;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Midi;
 using Model;
 using Persistence;
 
@@ -12,15 +13,20 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly FixtureLibrary _library = new();
     private readonly IShowStore _store = new JsonShowStore();
+    private readonly MidiInputService _midi = new();
 
     private ShowService _show = null!;
     private ArtNetService? _artNet;
+    private MidiBindingDispatcher? _midiDispatcher;
 
     // Serialized show as of the last save/load; compared against the current show to detect edits.
     private string _savedSnapshot = string.Empty;
 
     public EffectsPanelViewModel EffectsPanel { get; } = new();
     public FixtureEditorViewModel FixtureEditor { get; } = new();
+
+    // Live view of incoming MIDI (app-level, since the MIDI service spans all shows).
+    public MidiMonitorViewModel MidiMonitor { get; }
 
     // Rebuilt whenever the show is swapped (New / Open), so the panels rebind to the new show.
     [ObservableProperty]
@@ -31,6 +37,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial MacrosWindowViewModel? MacrosPanel { get; set; }
+
+    [ObservableProperty]
+    public partial BindingsWindowViewModel? BindingsPanel { get; set; }
 
     // App-level macro host driving the live show — shared by the Macros window and (later) input
     // bindings, so every input source runs macros against the same fixtures / cues / blackout.
@@ -57,9 +66,19 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-            lifetime.Exit += (_, _) => _artNet?.Dispose();
+            lifetime.Exit += (_, _) =>
+            {
+                _artNet?.Dispose();
+                _midi.Dispose();
+            };
+
+        MidiMonitor = new MidiMonitorViewModel(_midi);
+        // Route every inbound message to the current show's dispatcher (rebuilt on each LoadShow).
+        _midi.MessageReceived += m => _midiDispatcher?.Dispatch(m);
 
         LoadShow(CreateEmptyShow(), path: null);
+
+        _ = _midi.StartAsync();
     }
 
     public void New() => LoadShow(CreateEmptyShow(), path: null);
@@ -89,12 +108,22 @@ public partial class MainWindowViewModel : ViewModelBase
         MacroHost = new MacroHost(FixturesListPanel, CueListPanel,
             getBlackout: () => Blackout, setBlackout: v => Blackout = v);
         MacrosPanel = new MacrosWindowViewModel(show, MacroHost);
+        // MIDI bindings are per-show, so rebuild the dispatcher against the new show's bindings.
+        _midiDispatcher = new MidiBindingDispatcher(show.Bindings, MacroHost);
+        BindingsPanel = new BindingsWindowViewModel(show, _midi, RebuildMidiBindings);
         FixtureEditor.SelectedFixture = FixturesListPanel.SelectedFixture;
 
         _artNet = new ArtNetService(show);
         CurrentPath = path;
         _savedSnapshot = _store.Serialize(show);
         OnPropertyChanged(nameof(Blackout));
+    }
+
+    // Rebuild the live MIDI dispatcher after the show's bindings are edited, so changes apply at once.
+    public void RebuildMidiBindings()
+    {
+        if (MacroHost is not null)
+            _midiDispatcher = new MidiBindingDispatcher(_show.Bindings, MacroHost);
     }
 
     private void OnFixtureSelectionChanged(object? sender, PropertyChangedEventArgs e)

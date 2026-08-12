@@ -74,7 +74,8 @@ public sealed class JsonShowStore : IShowStore
                 Device = b.Trigger.Device,
                 Channel = b.Trigger.Channel,
                 Message = b.Trigger.Message,
-                Number = b.Trigger.Number
+                Number = b.Trigger.Number,
+                IgnoreZero = b.Trigger.IgnoreZero
             }
         }).ToList()
     };
@@ -156,7 +157,8 @@ public sealed class JsonShowStore : IShowStore
                 Device = b.Trigger.Device,
                 Channel = b.Trigger.Channel,
                 Message = b.Trigger.Message,
-                Number = b.Trigger.Number
+                Number = b.Trigger.Number,
+                IgnoreZero = b.Trigger.IgnoreZero
             }
         }).ToList();
 

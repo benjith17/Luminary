@@ -14,6 +14,8 @@ public partial class MainWindow : Window
 {
     private ConfigWindow? _configWindow;
     private MacrosWindow? _macrosWindow;
+    private BindingsWindow? _bindingsWindow;
+    private MidiMonitorWindow? _midiWindow;
     private bool _forceClose;
     private bool _keybindsAttached;
 
@@ -204,6 +206,42 @@ public partial class MainWindow : Window
         _macrosWindow.Show(this);
     }
 
+    private void OnBindingsClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+
+        if (_bindingsWindow is not null)
+        {
+            _bindingsWindow.Activate();
+            return;
+        }
+
+        _bindingsWindow = new BindingsWindow { DataContext = vm.BindingsPanel };
+        _bindingsWindow.Closed += (_, _) =>
+        {
+            vm.BindingsPanel?.StopListening(); // don't keep capturing MIDI after close
+            _bindingsWindow = null;
+        };
+        AttachCloseKeybind(_bindingsWindow);
+        _bindingsWindow.Show(this);
+    }
+
+    private void OnMidiClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+
+        if (_midiWindow is not null)
+        {
+            _midiWindow.Activate();
+            return;
+        }
+
+        _midiWindow = new MidiMonitorWindow { DataContext = vm.MidiMonitor };
+        _midiWindow.Closed += (_, _) => _midiWindow = null;
+        AttachCloseKeybind(_midiWindow);
+        _midiWindow.Show(this);
+    }
+
     // Closes the non-modal tool windows (used before swapping the show on New / Open).
     private void CloseToolWindows()
     {
@@ -211,5 +249,7 @@ public partial class MainWindow : Window
         _configWindow = null;
         _macrosWindow?.Close();
         _macrosWindow = null;
+        _bindingsWindow?.Close();
+        _bindingsWindow = null;
     }
 }
