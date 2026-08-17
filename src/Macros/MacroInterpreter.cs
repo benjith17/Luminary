@@ -78,6 +78,15 @@ public static class MacroInterpreter
                         await RunBlock(repeat.Body, host, input, report, ct);
                     }
                     break;
+
+                case LoopStatement loop:
+                    while (true)
+                    {
+                        ct.ThrowIfCancellationRequested();
+                        // Yield each pass so a wait-free loop stays cancellable and never freezes the UI.
+                        await Task.Yield();
+                        await RunBlock(loop.Body, host, input, report, ct);
+                    }
             }
         }
     }

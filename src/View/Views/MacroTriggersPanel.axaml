@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             x:Class="View.MacroTriggersPanel"
+             x:DataType="vm:MacrosWindowViewModel">
+
+  <UserControl.Styles>
+    <!-- Pulsing "live" dot, shown only while a macro is running -->
+    <Style Selector="Ellipse.pulse">
+      <Style.Animations>
+        <Animation Duration="0:0:1.1" IterationCount="INFINITE">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+          <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.25" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+
+    <!-- Header -->
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource PanelHeader-Bg}"
+            Padding="12 9"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource ThemeBorder0}">
+      <TextBlock Text="Macros"
+                 Foreground="{DynamicResource ThemeText0}"
+                 FontSize="12"
+                 FontWeight="SemiBold"
+                 VerticalAlignment="Center" />
+    </Border>
+
+    <!-- Empty-state hint -->
+    <TextBlock DockPanel.Dock="Top"
+               Text="No macros yet — add them in the Macros window."
+               IsVisible="{Binding !Macros.Count}"
+               Foreground="{DynamicResource ThemeText2}"
+               FontSize="11" TextWrapping="Wrap"
+               Margin="12 10" />
+
+    <!-- Macro triggers: one click-to-run/stop button per macro -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding Macros}" Margin="0 4 0 4">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:MacroItemViewModel">
+            <Button Classes="themed"
+                    Command="{Binding TriggerCommand}"
+                    IsEnabled="{Binding CanTrigger}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    Margin="8 3 8 3" Padding="10 7"
+                    Cursor="Hand">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Play / stop glyph -->
+                <Panel Grid.Column="0" Width="12" Margin="0 0 8 0" VerticalAlignment="Center">
+                  <TextBlock Text="▶" FontSize="10"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             Foreground="{DynamicResource ThemeText2}"
+                             IsVisible="{Binding !IsRunning}" />
+                  <TextBlock Text="■" FontSize="11"
+                             HorizontalAlignment="Center" VerticalAlignment="Center"
+                             Foreground="#E5484D"
+                             IsVisible="{Binding IsRunning}" />
+                </Panel>
+
+                <!-- Name -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding Name}"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
+
+                <!-- Running indicator -->
+                <Ellipse Grid.Column="2" Classes="pulse"
+                         Width="8" Height="8" Margin="8 0 0 0"
+                         Fill="#E5484D"
+                         VerticalAlignment="Center"
+                         IsVisible="{Binding IsRunning}" />
+              </Grid>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+
+</UserControl>

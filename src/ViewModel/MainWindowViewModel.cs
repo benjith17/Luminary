@@ -97,6 +97,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void LoadShow(ShowService show, string? path)
     {
         _artNet?.Dispose();
+        MacrosPanel?.StopAll(); // don't let the old show's panel-triggered macros run against the new one
         _show = show;
 
         FixturesListPanel = new FixturesListPanelViewModel(show, _library);

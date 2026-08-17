@@ -38,7 +38,7 @@ public partial class MacrosWindowViewModel : ViewModelBase
     {
         _show = show;
         _host = host;
-        Macros = new ObservableCollection<MacroItemViewModel>(show.Macros.Select(m => new MacroItemViewModel(m)));
+        Macros = new ObservableCollection<MacroItemViewModel>(show.Macros.Select(m => new MacroItemViewModel(m, host)));
         SelectedMacro = Macros.FirstOrDefault();
     }
 
@@ -47,7 +47,7 @@ public partial class MacrosWindowViewModel : ViewModelBase
     {
         var macro = new Macro { Name = UniqueName("Macro"), Source = "" };
         _show.Macros.Add(macro);
-        var vm = new MacroItemViewModel(macro);
+        var vm = new MacroItemViewModel(macro, _host);
         Macros.Add(vm);
         SelectedMacro = vm;
     }
@@ -106,8 +106,16 @@ public partial class MacrosWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(IsRunning))]
     private void Stop() => _cts?.Cancel();
 
-    // Called when the window closes or the show is swapped, so a run can't outlive its context.
+    // Called when the Macros window closes, so the editor's run can't outlive its window. Panel-
+    // triggered macros are intentionally left running — they live in the main window.
     public void StopRun() => _cts?.Cancel();
+
+    // Stop the editor run and every panel-triggered macro (used when the show itself is swapped).
+    public void StopAll()
+    {
+        StopRun();
+        foreach (var macro in Macros) macro.StopRun();
+    }
 
     private bool HasSelection() => SelectedMacro is not null;
     private bool CanRun() => !IsRunning && SelectedMacro is not null;

@@ -118,10 +118,25 @@
 
     <GridSplitter Classes="themed vertical" Grid.Column="1" />
 
-    <Border Grid.Column="2" Background="{DynamicResource Panel-Bg}">
+    <Grid Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="4"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
       <!-- EFFECTS PANEL -->
-      <views:EffectsPanel DataContext="{Binding EffectsPanel}"/>
-    </Border>
+      <Border Grid.Row="0" Background="{DynamicResource Panel-Bg}">
+        <views:EffectsPanel DataContext="{Binding EffectsPanel}"/>
+      </Border>
+
+      <GridSplitter Classes="themed horizontal" Grid.Row="1" />
+
+      <!-- MACRO TRIGGERS PANEL -->
+      <Border Grid.Row="2" Background="{DynamicResource Panel-Bg}">
+        <views:MacroTriggersPanel DataContext="{Binding MacrosPanel}"/>
+      </Border>
+    </Grid>
     </Grid>
 
   </DockPanel>

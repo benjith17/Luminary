@@ -97,7 +97,8 @@ public partial class BindingItemViewModel : ViewModelBase
     {
         get
         {
-            var program = Parser.Parse(_binding.Action);
+            // Bindings disallow unbounded loops (a binding must finish), so parse in that context.
+            var program = Parser.Parse(_binding.Action, allowLoops: false);
             var error = program.Diagnostics.FirstOrDefault(d => d.Severity == Severity.Error);
             return error?.ToString() ?? "";
         }

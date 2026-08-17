@@ -17,7 +17,9 @@ public sealed class MacroBindingRunner
     public MacroBindingRunner(string source, IMacroHost host)
     {
         _host = host;
-        _program = Parser.Parse(source);
+        // Bindings disallow unbounded loops (a binding must finish); a loop makes this a parse
+        // error, so HasErrors below refuses to fire it.
+        _program = Parser.Parse(source, allowLoops: false);
     }
 
     public bool HasErrors => _program.HasErrors;

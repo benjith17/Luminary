@@ -8,19 +8,23 @@ public sealed class Parser
 {
     private readonly List<Token> _tokens;
     private readonly List<Diagnostic> _diagnostics;
+    private readonly bool _allowLoops;
     private int _pos;
 
-    private Parser(List<Token> tokens, List<Diagnostic> lexDiagnostics)
+    private Parser(List<Token> tokens, List<Diagnostic> lexDiagnostics, bool allowLoops)
     {
         _tokens = tokens;
         _diagnostics = lexDiagnostics; // start from the lexer's diagnostics, then append our own
+        _allowLoops = allowLoops;
     }
 
-    public static MacroProgram Parse(string source)
+    // allowLoops is false for binding actions: a binding fires in response to an input and must
+    // finish, so an unbounded `loop` there is a parse error rather than a valid program.
+    public static MacroProgram Parse(string source, bool allowLoops = true)
     {
         var lexer = new Lexer(source);
         var tokens = lexer.Tokenize();
-        var parser = new Parser(tokens, lexer.Diagnostics);
+        var parser = new Parser(tokens, lexer.Diagnostics, allowLoops);
         var statements = parser.ParseStatements(insideBlock: false);
         return new MacroProgram(statements, parser._diagnostics);
     }
@@ -71,6 +75,9 @@ public sealed class Parser
                 case "repeat":
                     Advance();
                     return ParseRepeat(line);
+                case "loop":
+                    Advance();
+                    return ParseLoop(tok, line);
                 case "blackout":
                     Advance();
                     return ParseBlackout(line);
@@ -222,6 +229,56 @@ public sealed class Parser
 
         return new RepeatStatement(count, body) { Line = line };
     }
+
+    // ---- loop … end ------------------------------------------------------------------------
+
+    private Statement ParseLoop(Token loopTok, int line)
+    {
+        // A binding must finish, so an unbounded loop isn't allowed there. Still parse the body so
+        // the editor shows the whole structure; the error just blocks execution.
+        if (!_allowLoops)
+            Error(loopTok, "'loop' can't be used in a binding — a binding must finish. Use it in a macro instead.");
+
+        if (!Check(TokenType.Newline) && !Check(TokenType.Eof))
+        {
+            Error(Peek(), "'loop' must be on its own line.");
+            SkipToLineEnd();
+        }
+
+        var body = ParseStatements(insideBlock: true);
+
+        if (IsKeyword("end"))
+        {
+            Advance();
+            if (!Check(TokenType.Newline) && !Check(TokenType.Eof))
+            {
+                Error(Peek(), $"Unexpected {Describe(Peek())} after 'end'.");
+                SkipToLineEnd();
+            }
+        }
+        else
+        {
+            Error(Peek(), "Missing 'end' to close 'loop'.");
+        }
+
+        // A loop with no wait anywhere spins as fast as the CPU allows — almost never intended.
+        if (_allowLoops && body.Count > 0 && !ContainsWait(body))
+            _diagnostics.Add(new Diagnostic(line, loopTok.Column,
+                "This 'loop' has no 'wait', so it runs as fast as possible and will peg a CPU core. Add a 'wait' inside it.",
+                Severity.Warning));
+
+        return new LoopStatement(body) { Line = line };
+    }
+
+    // Does this block wait somewhere (directly or inside a nested repeat/loop)?
+    private static bool ContainsWait(IReadOnlyList<Statement> statements) =>
+        statements.Any(s => s switch
+        {
+            WaitStatement => true,
+            RepeatStatement r => ContainsWait(r.Body),
+            LoopStatement l => ContainsWait(l.Body),
+            _ => false
+        });
 
     // ---- fixture value lines ---------------------------------------------------------------
 

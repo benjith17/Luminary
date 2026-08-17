@@ -28,6 +28,10 @@ public sealed record WaitStatement(TimeSpan Duration) : Statement;
 // `repeat 4` … `end` — run Body Count times.
 public sealed record RepeatStatement(int Count, IReadOnlyList<Statement> Body) : Statement;
 
+// `loop` … `end` — run Body forever, until the macro is stopped. Rejected in binding contexts
+// (a binding must finish), so it only appears in standalone macros.
+public sealed record LoopStatement(IReadOnlyList<Statement> Body) : Statement;
+
 // `blackout on` / `blackout off` / `blackout toggle` (bare `blackout` = toggle).
 public sealed record BlackoutStatement(BlackoutMode Mode) : Statement;
 
