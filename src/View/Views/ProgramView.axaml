@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ViewModel"
+             xmlns:views="using:View"
+             x:Class="View.ProgramView"
+             x:DataType="vm:MainWindowViewModel">
+
+  <!-- Program tab: fixtures list down the side; fixture-editor strip across the top with the
+       cue list underneath. Every divider is a resizable splitter. -->
+  <Grid Background="{DynamicResource ThemeBg0}">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="180"/>
+      <ColumnDefinition Width="4"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Fixtures list down the side -->
+    <Border Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+      <views:FixturesListPanel DataContext="{Binding FixturesListPanel}"/>
+    </Border>
+
+    <GridSplitter Classes="themed vertical" Grid.Column="1" />
+
+    <Grid Grid.Column="2">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="300"/>
+        <RowDefinition Height="4"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+
+      <!-- Fixture editor strip across the top -->
+      <Border Grid.Row="0" Background="{DynamicResource Panel-Bg}">
+        <views:FixtureEditor DataContext="{Binding FixtureEditor}"/>
+      </Border>
+
+      <GridSplitter Classes="themed horizontal" Grid.Row="1" />
+
+      <!-- Cue list underneath -->
+      <Border Grid.Row="2" Background="{DynamicResource Panel-Bg}">
+        <views:CueListPanel DataContext="{Binding CueListPanel}"/>
+      </Border>
+    </Grid>
+  </Grid>
+
+</UserControl>

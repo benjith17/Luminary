@@ -37,6 +37,27 @@
     <Style Selector="ToggleButton.blackout:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="#D9503E" />
     </Style>
+
+    <!-- Workspace tabs: compact strip that sits flush under the menu bar -->
+    <Style Selector="TabControl.workspace">
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="TabControl.workspace TabItem">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="Normal" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Height" Value="34" />
+      <Setter Property="Padding" Value="14 0" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText2}" />
+    </Style>
+    <Style Selector="TabControl.workspace TabItem:selected">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText0}" />
+    </Style>
+    <Style Selector="TabControl.workspace TabItem:pointerover /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource ListItem-Hover}" />
+    </Style>
   </Window.Styles>
 
   <DockPanel>
@@ -66,78 +87,29 @@
       </DockPanel>
     </Border>
 
-    <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="4"/>
-      <ColumnDefinition Width="250"/>
-    </Grid.ColumnDefinitions>
-
-    <Grid Grid.Column="0" Background="{DynamicResource ThemeBg0}">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="2*"/>
-        <RowDefinition Height="4"/>
-        <RowDefinition Height="*"/>
-      </Grid.RowDefinitions>
-
-      <Grid Grid.Row="0">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="120"/>
-          <ColumnDefinition Width="4"/>
-          <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <Border Grid.Column="0" Background="{DynamicResource Panel-Bg}">
-          <views:FixturesListPanel DataContext="{Binding FixturesListPanel}"/>
-        </Border>
-        <GridSplitter Classes="themed vertical" Grid.Column="1" />
-        <Border Grid.Column="2" Background="{DynamicResource Panel-Bg}">
-          <views:FixtureEditor DataContext="{Binding FixtureEditor}"/>
-        </Border>
-      </Grid>
-
-      <GridSplitter Classes="themed horizontal" Grid.Row="1" />
-
-      <Grid Grid.Row="2">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="4"/>
-          <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <StackPanel Grid.Column="0">
-          <TextBlock Text="Bottom Left" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </StackPanel>
-
-        <GridSplitter Classes="themed vertical" Grid.Column="1" />
-
-        <Border Grid.Column="2" Background="{DynamicResource Panel-Bg}">
-          <views:CueListPanel DataContext="{Binding CueListPanel}"/>
-        </Border>
-      </Grid>
-    </Grid>
-
-    <GridSplitter Classes="themed vertical" Grid.Column="1" />
-
-    <Grid Grid.Column="2">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="4"/>
-        <RowDefinition Height="*"/>
-      </Grid.RowDefinitions>
-
-      <!-- EFFECTS PANEL -->
-      <Border Grid.Row="0" Background="{DynamicResource Panel-Bg}">
-        <views:EffectsPanel DataContext="{Binding EffectsPanel}"/>
-      </Border>
-
-      <GridSplitter Classes="themed horizontal" Grid.Row="1" />
-
-      <!-- MACRO TRIGGERS PANEL -->
-      <Border Grid.Row="2" Background="{DynamicResource Panel-Bg}">
-        <views:MacroTriggersPanel DataContext="{Binding MacrosPanel}"/>
-      </Border>
-    </Grid>
-    </Grid>
+    <!-- Workspace tabs -->
+    <TabControl Classes="workspace" Background="{DynamicResource ThemeBg0}">
+      <TabItem Header="Program">
+        <views:ProgramView />
+      </TabItem>
+      <!-- Temporary home for the effects + macros panels until their own tab is defined. -->
+      <TabItem Header="Effects">
+        <Grid Background="{DynamicResource ThemeBg0}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="4"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Border Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+            <views:EffectsPanel DataContext="{Binding EffectsPanel}"/>
+          </Border>
+          <GridSplitter Classes="themed vertical" Grid.Column="1" />
+          <Border Grid.Column="2" Background="{DynamicResource Panel-Bg}">
+            <views:MacroTriggersPanel DataContext="{Binding MacrosPanel}"/>
+          </Border>
+        </Grid>
+      </TabItem>
+    </TabControl>
 
   </DockPanel>
 </Window>
