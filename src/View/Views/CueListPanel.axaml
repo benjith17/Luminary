@@ -7,129 +7,321 @@
 
   <UserControl.Resources>
     <SolidColorBrush x:Key="ActiveCue-Bar" Color="{DynamicResource ThemeSuccess}" />
+    <SolidColorBrush x:Key="Live-Accent" Color="#54B57B" />
+    <SolidColorBrush x:Key="Next-Accent" Color="#5E93CF" />
   </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Inspector toggle (ghost button, accented when active) -->
+    <Style Selector="ToggleButton.insp-toggle">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText1}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Padding" Value="9 4" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="ToggleButton.insp-toggle /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorder1}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="ToggleButton.insp-toggle:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ListItem-Hover}" />
+    </Style>
+    <Style Selector="ToggleButton.insp-toggle:checked">
+      <Setter Property="Foreground" Value="{DynamicResource Next-Accent}" />
+    </Style>
+    <Style Selector="ToggleButton.insp-toggle:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource Next-Accent}" />
+      <Setter Property="Background" Value="#1F3C6FA8" />
+    </Style>
+
+    <!-- "GO" call button -->
+    <Style Selector="Button.go">
+      <Setter Property="Foreground" Value="#EAF7EF" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Button.go /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeSuccess}" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Button.go:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#469E69" />
+    </Style>
+
+    <!-- Playback progress bar: green for a crossfade, blue for an auto-follow countdown -->
+    <Style Selector="ProgressBar.transport">
+      <Setter Property="Foreground" Value="{DynamicResource Live-Accent}" />
+    </Style>
+    <Style Selector="ProgressBar.transport.follow">
+      <Setter Property="Foreground" Value="{DynamicResource Next-Accent}" />
+    </Style>
+
+    <!-- Column-header labels -->
+    <Style Selector="TextBlock.colhead">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText2}" />
+      <Setter Property="FontSize" Value="9" />
+      <Setter Property="LetterSpacing" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Inspector field labels -->
+    <Style Selector="TextBlock.ilabel">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText2}" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="LetterSpacing" Value="1" />
+    </Style>
+  </UserControl.Styles>
 
   <DockPanel>
 
-    <!-- Header -->
+    <!-- ============ Header ============ -->
     <Border DockPanel.Dock="Top"
             Background="{DynamicResource PanelHeader-Bg}"
-            Padding="12 9"
+            Padding="12 7"
             BorderThickness="0 0 0 1"
             BorderBrush="{DynamicResource ThemeBorder0}">
-      <TextBlock Text="Cue List"
-                 Foreground="{DynamicResource ThemeText0}"
-                 FontSize="12"
-                 FontWeight="SemiBold"
-                 VerticalAlignment="Center" />
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   Text="Cue List"
+                   Foreground="{DynamicResource ThemeText0}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center" />
+        <ToggleButton Grid.Column="1"
+                      Classes="insp-toggle"
+                      Content="⊟ Inspector"
+                      IsChecked="{Binding ShowInspector, Mode=TwoWay}" />
+      </Grid>
     </Border>
 
-    <!-- Footer buttons -->
+    <!-- ============ Playback strip (live → next, GO) ============ -->
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource ThemeBg1}"
+            Padding="12 7"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource ThemeBorder0}">
+      <DockPanel LastChildFill="True">
+
+        <Button DockPanel.Dock="Right"
+                Classes="go"
+                Content="GO"
+                Command="{Binding GoCommand}"
+                Padding="20 5"
+                FontSize="12"
+                VerticalAlignment="Center" />
+
+        <!-- Readout: auto-follow countdown, else fade "elapsed / duration", else the cue's fade time -->
+        <TextBlock DockPanel.Dock="Right"
+                   Text="{Binding ProgressReadout}"
+                   Foreground="{DynamicResource ThemeText2}"
+                   FontFamily="Monospace"
+                   FontSize="10"
+                   VerticalAlignment="Center"
+                   Margin="10 0 12 0" />
+
+        <!-- Live / next summary -->
+        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+          <Border Background="{DynamicResource ThemeSuccess}" CornerRadius="3" Padding="5 1" VerticalAlignment="Center">
+            <TextBlock Text="LIVE" Foreground="#EAF7EF" FontSize="9" FontWeight="Bold" LetterSpacing="1" />
+          </Border>
+          <TextBlock Text="{Binding ActiveCue.DisplayNumber, FallbackValue='-'}"
+                     Foreground="{DynamicResource Live-Accent}" FontFamily="Monospace" FontSize="12" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding ActiveCue.Label, FallbackValue='(nothing live)'}"
+                     Foreground="{DynamicResource ThemeText0}" FontSize="12" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" MaxWidth="150" />
+
+          <TextBlock Text="→" Foreground="{DynamicResource ThemeText2}" FontSize="13" VerticalAlignment="Center" Margin="4 0" />
+
+          <Border BorderBrush="{DynamicResource Next-Accent}" BorderThickness="1" CornerRadius="3" Padding="5 1" VerticalAlignment="Center">
+            <TextBlock Text="NEXT" Foreground="{DynamicResource Next-Accent}" FontSize="9" FontWeight="Bold" LetterSpacing="1" />
+          </Border>
+          <TextBlock Text="{Binding SelectedCue.DisplayNumber, FallbackValue='-'}"
+                     Foreground="{DynamicResource Next-Accent}" FontFamily="Monospace" FontSize="12" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding SelectedCue.Label, FallbackValue='(none selected)'}"
+                     Foreground="{DynamicResource ThemeText0}" FontSize="12" VerticalAlignment="Center"
+                     TextTrimming="CharacterEllipsis" MaxWidth="150" />
+        </StackPanel>
+
+        <!-- Progress bar: green while a crossfade runs, blue while an auto-follow counts down -->
+        <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressValue}"
+                     Classes="transport" Classes.follow="{Binding IsFollowPending}"
+                     Height="5" MinHeight="0" CornerRadius="3"
+                     Background="{DynamicResource ThemeBg3}"
+                     VerticalAlignment="Center" Margin="14 0 6 0" />
+      </DockPanel>
+    </Border>
+
+    <!-- ============ Footer ============ -->
     <Border DockPanel.Dock="Bottom"
             Padding="8 6"
             BorderThickness="0 1 0 0"
             BorderBrush="{DynamicResource ThemeBorder0}">
       <DockPanel>
-        <StackPanel DockPanel.Dock="Left"
-                    Orientation="Horizontal"
-                    Spacing="4"
-                    VerticalAlignment="Center">
-          <TextBlock Text="Fade"
-                     Foreground="{DynamicResource ThemeText2}"
-                     FontSize="11"
-                     VerticalAlignment="Center" />
+        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+          <TextBlock Text="Fade" Foreground="{DynamicResource ThemeText2}" FontSize="11" VerticalAlignment="Center" />
           <TextBox Text="{Binding SelectedCue.FadeSeconds, Mode=TwoWay}"
                    IsEnabled="{Binding SelectedCue, Converter={x:Static conv:ObjectConverters.IsNotNull}}"
-                   Width="46"
-                   FontSize="11"
-                   Padding="4 2"
-                   MinHeight="0"
-                   VerticalContentAlignment="Center" />
-          <TextBlock Text="s"
-                     Foreground="{DynamicResource ThemeText2}"
-                     FontSize="11"
-                     VerticalAlignment="Center" />
+                   Width="46" FontSize="11" Padding="4 2" MinHeight="0" VerticalContentAlignment="Center" />
+          <TextBlock Text="s" Foreground="{DynamicResource ThemeText2}" FontSize="11" VerticalAlignment="Center" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-          <Button Classes="themed"
-                  Content="↑"
-                  Command="{Binding MoveUpCommand}"
-                  Padding="10 5"
-                  FontSize="11" />
-          <Button Classes="themed"
-                  Content="↓"
-                  Command="{Binding MoveDownCommand}"
-                  Padding="10 5"
-                  FontSize="11" />
-          <Button Classes="themed"
-                  Content="Delete"
-                  Command="{Binding DeleteCommand}"
-                  Padding="10 5"
-                  FontSize="11" />
-          <Button Classes="themed"
-                  Content="Record"
-                  Command="{Binding RecordCommand}"
-                  Padding="10 5"
-                  FontSize="11" />
-          <Button Classes="themed"
-                  Content="Go"
-                  Command="{Binding GoCommand}"
-                  Padding="10 5"
-                  FontSize="11" />
+          <Button Classes="themed" Content="↑" Command="{Binding MoveUpCommand}" Padding="10 5" FontSize="11" />
+          <Button Classes="themed" Content="↓" Command="{Binding MoveDownCommand}" Padding="10 5" FontSize="11" />
+          <Button Classes="themed" Content="Delete" Command="{Binding DeleteCommand}" Padding="10 5" FontSize="11" />
+          <Button Classes="themed" Content="Record" Command="{Binding RecordCommand}" Padding="10 5" FontSize="11" />
+          <Button Classes="themed" Content="Update" Command="{Binding UpdateCommand}" Padding="10 5" FontSize="11"
+                  ToolTip.Tip="Re-record the current stage into the selected cue" />
         </StackPanel>
       </DockPanel>
     </Border>
 
-    <!-- Cue list -->
-    <ListBox ItemsSource="{Binding Cues}"
-             SelectedItem="{Binding SelectedCue}"
-             Background="Transparent"
-             BorderThickness="0"
-             Padding="0 4 0 4"
-             DoubleTapped="OnCueDoubleTapped">
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:CueViewModel">
-          <Grid ColumnDefinitions="3,40,*,Auto">
-            <!-- Active-on-stage accent bar -->
-            <Border Grid.Column="0"
-                    Width="3"
-                    CornerRadius="1.5"
-                    IsVisible="{Binding IsActive}"
-                    Background="{DynamicResource ActiveCue-Bar}" />
-            <TextBlock Grid.Column="1"
-                       Text="{Binding DisplayNumber}"
-                       Foreground="{DynamicResource ThemeText2}"
-                       FontSize="11"
-                       FontFamily="Monospace"
-                       VerticalAlignment="Center"
-                       Margin="6 0 0 0" />
-            <Panel Grid.Column="2">
-              <TextBlock Text="{Binding Label}"
-                         IsVisible="{Binding !IsEditing}"
-                         Foreground="{DynamicResource ThemeText0}"
-                         FontSize="12"
-                         VerticalAlignment="Center"
-                         TextTrimming="CharacterEllipsis" />
-              <TextBox Text="{Binding Label, Mode=TwoWay}"
-                       IsVisible="{Binding IsEditing}"
-                       FontSize="12"
-                       Padding="2 0"
-                       MinHeight="0"
-                       VerticalContentAlignment="Center"
-                       KeyDown="OnRenameKeyDown"
-                       LostFocus="OnRenameLostFocus" />
-            </Panel>
-            <TextBlock Grid.Column="3"
-                       Text="{Binding FadeDisplay}"
-                       Foreground="{DynamicResource ThemeText2}"
-                       FontSize="10"
-                       FontFamily="Monospace"
-                       VerticalAlignment="Center"
-                       Margin="8 0 4 0" />
+    <!-- ============ Body: cue table + inspector ============ -->
+    <Grid ColumnDefinitions="*,Auto">
+
+      <DockPanel Grid.Column="0">
+        <!-- Column header -->
+        <Border DockPanel.Dock="Top" Margin="8 6 8 2" Padding="10 0"
+                BorderThickness="0 0 0 1" BorderBrush="{DynamicResource ThemeBorder0}">
+          <Grid ColumnDefinitions="3,40,*,56,56" Height="20">
+            <TextBlock Grid.Column="1" Classes="colhead" Text="#" Margin="6 0 0 0" />
+            <TextBlock Grid.Column="2" Classes="colhead" Text="LABEL" />
+            <TextBlock Grid.Column="3" Classes="colhead" Text="FADE" HorizontalAlignment="Right" Margin="0 0 4 0" />
+            <TextBlock Grid.Column="4" Classes="colhead" Text="FOLLOW" HorizontalAlignment="Right" Margin="0 0 4 0" />
           </Grid>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
+        </Border>
+
+        <!-- Cue rows -->
+        <ListBox ItemsSource="{Binding Cues}"
+                 SelectedItem="{Binding SelectedCue}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0 4 0 4"
+                 DoubleTapped="OnCueDoubleTapped">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CueViewModel">
+              <Grid ColumnDefinitions="3,40,*,56,56">
+                <!-- Active-on-stage accent bar -->
+                <Border Grid.Column="0" Width="3" CornerRadius="1.5"
+                        IsVisible="{Binding IsActive}"
+                        Background="{DynamicResource ActiveCue-Bar}" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding DisplayNumber}"
+                           Foreground="{DynamicResource ThemeText2}"
+                           FontSize="11" FontFamily="Monospace"
+                           VerticalAlignment="Center" Margin="6 0 0 0" />
+                <Panel Grid.Column="2">
+                  <TextBlock Text="{Binding Label}"
+                             IsVisible="{Binding !IsEditing}"
+                             Foreground="{DynamicResource ThemeText0}"
+                             FontSize="12" VerticalAlignment="Center"
+                             TextTrimming="CharacterEllipsis" />
+                  <TextBox Text="{Binding Label, Mode=TwoWay}"
+                           IsVisible="{Binding IsEditing}"
+                           FontSize="12" Padding="2 0" MinHeight="0"
+                           VerticalContentAlignment="Center"
+                           KeyDown="OnRenameKeyDown"
+                           LostFocus="OnRenameLostFocus" />
+                </Panel>
+                <TextBlock Grid.Column="3"
+                           Text="{Binding FadeDisplay}"
+                           Foreground="{DynamicResource ThemeText2}"
+                           FontSize="10" FontFamily="Monospace"
+                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 4 0" />
+                <TextBlock Grid.Column="4"
+                           Text="{Binding FollowDisplay}"
+                           Foreground="{DynamicResource ThemeText2}"
+                           FontSize="10" FontFamily="Monospace"
+                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 4 0" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- Inspector sidebar (toggleable) -->
+      <Border Grid.Column="1"
+              Width="300"
+              IsVisible="{Binding ShowInspector}"
+              Background="{DynamicResource ThemeBg1}"
+              BorderThickness="1 0 0 0"
+              BorderBrush="{DynamicResource ThemeBorder0}">
+      <Panel>
+
+        <!-- Empty state -->
+        <TextBlock Text="Select a cue to inspect it."
+                   IsVisible="{Binding SelectedCue, Converter={x:Static conv:ObjectConverters.IsNull}}"
+                   Foreground="{DynamicResource ThemeText2}" FontSize="12"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+        <!-- Details -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      IsVisible="{Binding SelectedCue, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+          <StackPanel Margin="16 16 16 18" Spacing="14">
+
+            <TextBlock Text="{Binding SelectedCue.DisplayNumber, StringFormat='CUE {0} · selected'}"
+                       Foreground="{DynamicResource Next-Accent}" FontFamily="Monospace"
+                       FontSize="11" LetterSpacing="1" />
+
+            <TextBox Text="{Binding SelectedCue.Label, Mode=TwoWay}"
+                     FontSize="15" Padding="8 6" />
+
+            <Grid ColumnDefinitions="*,*" Margin="0">
+              <StackPanel Grid.Column="0" Spacing="5" Margin="0 0 5 0">
+                <TextBlock Classes="ilabel" Text="FADE IN" />
+                <TextBox Text="{Binding SelectedCue.FadeSeconds, Mode=TwoWay}"
+                         FontFamily="Monospace" FontSize="14" Padding="7 5" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="5" Margin="5 0 0 0">
+                <TextBlock Classes="ilabel" Text="FOLLOW" />
+                <TextBox Text="{Binding SelectedCue.FollowText, Mode=TwoWay}"
+                         PlaceholderText="none" FontFamily="Monospace" FontSize="14" Padding="7 5"
+                         ToolTip.Tip="Seconds after this cue fires before the next cue auto-fires. Blank = hold." />
+              </StackPanel>
+            </Grid>
+
+            <!-- Contents -->
+            <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
+                    BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" Padding="11">
+              <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Grid.Column="0" Classes="ilabel" Text="CONTENTS" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding SelectedCueContents.Count, StringFormat='{}{0} fixtures'}"
+                             Foreground="{DynamicResource ThemeText1}" FontFamily="Monospace" FontSize="12" />
+                </Grid>
+                <ItemsControl ItemsSource="{Binding SelectedCueContents}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                      <Border Background="{DynamicResource ThemeBg3}" CornerRadius="4"
+                              BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder1}"
+                              Padding="7 3" Margin="0 4 5 0">
+                        <TextBlock Text="{Binding}" Foreground="{DynamicResource ThemeText1}"
+                                   FontSize="11" FontFamily="Monospace" />
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+
+            <!-- Note -->
+            <StackPanel Spacing="6">
+              <TextBlock Classes="ilabel" Text="NOTE" />
+              <TextBox Text="{Binding SelectedCue.Notes, Mode=TwoWay}"
+                       AcceptsReturn="True" MinHeight="56" TextWrapping="Wrap"
+                       FontSize="12" Padding="8 6"
+                       PlaceholderText="Cue notes…" />
+            </StackPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Panel>
+      </Border>
+    </Grid>
 
   </DockPanel>
 

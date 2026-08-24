@@ -75,6 +75,8 @@ public sealed class CueDto
     public int Minor { get; set; }
     public string Label { get; set; } = string.Empty;
     public double FadeSeconds { get; set; }
+    public string Notes { get; set; } = string.Empty;
+    public double? FollowSeconds { get; set; }          // null = no auto-follow
     public List<SnapshotDto> Fixtures { get; set; } = [];
 }
 

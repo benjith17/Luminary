@@ -1,25 +1,98 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Model;
 
 namespace ViewModel;
 
-public partial class CueListPanelViewModel(ShowService showService, FixturesListPanelViewModel fixtures) : ViewModelBase
+public partial class CueListPanelViewModel : ViewModelBase
 {
-    public ObservableCollection<CueViewModel> Cues { get; } = new(
-        showService.CueList.Cues.Select(c => new CueViewModel(c))
-    );
+    private readonly ShowService showService;
+    private readonly FixturesListPanelViewModel fixtures;
+    private readonly CrossfadeEngine _crossfade = new();
+
+    // Repeating timer driving the auto-follow countdown; when the clock reaches the follow duration
+    // it fires _followTarget. Kept as its own clock so the strip can show a live countdown.
+    private readonly DispatcherTimer _followTimer;
+    private readonly Stopwatch _followClock = new();
+    private TimeSpan _followDuration;
+    private CueViewModel? _followTarget;
+
+    public CueListPanelViewModel(ShowService showService, FixturesListPanelViewModel fixtures)
+    {
+        this.showService = showService;
+        this.fixtures = fixtures;
+
+        Cues = new ObservableCollection<CueViewModel>(
+            showService.CueList.Cues.Select(c => new CueViewModel(c)));
+
+        _crossfade.ProgressChanged += OnCrossfadeProgress;
+        _followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(25) }; // ~40fps
+        _followTimer.Tick += OnFollowTick;
+    }
+
+    public ObservableCollection<CueViewModel> Cues { get; }
 
     // The highlighted row / "next cue to fire". Selection only — does not touch the stage.
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
     public partial CueViewModel? SelectedCue { get; set; }
 
     // The cue currently live on stage (the last one GO'd). Tracked by reference, separate from selection.
     [ObservableProperty]
     public partial CueViewModel? ActiveCue { get; set; }
 
-    private readonly CrossfadeEngine _crossfade = new();
+    // View state only: whether the per-cue inspector sidebar is shown. Not persisted.
+    [ObservableProperty]
+    public partial bool ShowInspector { get; set; } = false;
+
+    // Fixtures captured in the selected cue, for the inspector's Contents list ("<number> · <name>").
+    public ObservableCollection<string> SelectedCueContents { get; } = [];
+
+    // The playback strip reuses one bar for two phases: the crossfade while it runs, then the
+    // auto-follow countdown while one is pending. FadeProgress mirrors the engine; FollowProgress
+    // is driven by _followClock; IsFollowPending recolours the bar and gives the follow priority.
+    [ObservableProperty]
+    public partial double FadeProgress { get; set; }
+
+    [ObservableProperty]
+    public partial double FollowProgress { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFollowPending { get; set; }
+
+    // What the bar shows: a pending auto-follow countdown takes precedence over the fade.
+    public double ProgressValue => IsFollowPending ? FollowProgress : FadeProgress;
+
+    // "follow e / t s" while counting down to an auto-follow, "e / t s" while fading, else the
+    // selected cue's fade time.
+    public string ProgressReadout =>
+        IsFollowPending
+            ? $"follow {_followClock.Elapsed.TotalSeconds:0.0} / {_followDuration.TotalSeconds:0.0}s"
+            : _crossfade.IsFading
+                ? $"{_crossfade.Elapsed.TotalSeconds:0.0} / {_crossfade.Duration.TotalSeconds:0.0}s"
+                : SelectedCue?.FadeDisplay ?? "—";
+
+    partial void OnFadeProgressChanged(double value) => NotifyProgress();
+    partial void OnFollowProgressChanged(double value) => NotifyProgress();
+    partial void OnIsFollowPendingChanged(bool value) => NotifyProgress();
+
+    private void NotifyProgress()
+    {
+        OnPropertyChanged(nameof(ProgressValue));
+        OnPropertyChanged(nameof(ProgressReadout));
+    }
+
+    private void OnCrossfadeProgress() => FadeProgress = _crossfade.Progress;
+
+    partial void OnSelectedCueChanged(CueViewModel? value)
+    {
+        RefreshSelectedContents();
+        OnPropertyChanged(nameof(ProgressReadout));
+    }
 
     [RelayCommand]
     private void Go() => GoSelected();
@@ -78,7 +151,27 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
     {
         var (major, minor) = NextCueNumber();
         var cue = new Cue { CueMajor = major, CueMinor = minor };
+        CaptureInto(cue);
+        InsertSorted(cue);
+        SyncActiveIndex();
+    }
 
+    // Re-record the current stage into the selected cue, keeping its number, label, fade and notes.
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void Update()
+    {
+        if (SelectedCue is null) return;
+        CaptureInto(SelectedCue.Model);
+        SelectedCue.NotifyContentsChanged();
+        RefreshSelectedContents();
+    }
+
+    private bool HasSelection() => SelectedCue is not null;
+
+    // Captures every fixture's current output into the cue, replacing any prior snapshots.
+    private void CaptureInto(Cue cue)
+    {
+        cue.Fixtures.Clear();
         foreach (var fixture in fixtures.Fixtures)
         {
             cue.Fixtures.Add(new CueFixtureSnapshot
@@ -87,9 +180,6 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
                 CapabilityValues = fixture.Capabilities.Select(c => c.Capture()).ToList()
             });
         }
-
-        InsertSorted(cue);
-        SyncActiveIndex();
     }
 
     [RelayCommand]
@@ -180,6 +270,69 @@ public partial class CueListPanelViewModel(ShowService showService, FixturesList
         cueVm.IsActive = true;
         ActiveCue = cueVm;
         SyncActiveIndex();
+
+        ArmFollow(cueVm);
+    }
+
+    // ---- Auto-follow --------------------------------------------------------------------------
+
+    // After a cue fires, schedule the next cue to fire automatically if this one has a follow time.
+    // Any fire (manual or auto) re-arms this, so a manual GO cleanly interrupts and restarts a chain.
+    private void ArmFollow(CueViewModel firedCue)
+    {
+        CancelFollow();
+
+        if (firedCue.Model.Follow is not { } delay || delay <= TimeSpan.Zero) return;
+
+        var index = Cues.IndexOf(firedCue);
+        if (index < 0 || index + 1 >= Cues.Count) return; // last cue: nothing to follow into
+
+        _followTarget = Cues[index + 1];
+        _followDuration = delay;
+        _followClock.Restart();
+        FollowProgress = 0;
+        IsFollowPending = true;
+        _followTimer.Start();
+    }
+
+    private void CancelFollow()
+    {
+        _followTimer.Stop();
+        _followClock.Reset();
+        _followTarget = null;
+        FollowProgress = 0;
+        IsFollowPending = false;
+    }
+
+    private void OnFollowTick(object? sender, EventArgs e)
+    {
+        if (_followTarget is null) { CancelFollow(); return; }
+
+        var t = _followClock.Elapsed / _followDuration;
+        if (t < 1.0)
+        {
+            FollowProgress = t; // drives the strip's countdown bar + readout
+            return;
+        }
+
+        // Time's up: fire the captured target if it's still present (the list may have changed).
+        var target = _followTarget;
+        CancelFollow();
+        if (Cues.Contains(target)) FireAndAdvance(target);
+    }
+
+    // Rebuilds the inspector's Contents list for the selected cue, resolving each snapshot to its
+    // fixture number and name.
+    private void RefreshSelectedContents()
+    {
+        SelectedCueContents.Clear();
+        if (SelectedCue is null) return;
+
+        foreach (var snapshot in SelectedCue.Model.Fixtures)
+        {
+            var fixture = fixtures.Fixtures.FirstOrDefault(f => f.Fixture.Id == snapshot.FixtureId);
+            SelectedCueContents.Add(fixture is null ? "· missing fixture" : $"{fixture.Number} · {fixture.Name}");
+        }
     }
 
     // Keeps the persisted ActiveIndex in step with the active cue after any structural change.

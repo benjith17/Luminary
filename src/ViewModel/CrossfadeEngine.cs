@@ -13,6 +13,15 @@ public sealed class CrossfadeEngine
     private List<FadeChannel> _channels = [];
     private TimeSpan _duration;
 
+    // Live fade state, for a progress readout. IsFading is false between fades and for hard cuts.
+    public bool IsFading { get; private set; }
+    public double Progress { get; private set; }        // 0..1 through the current fade
+    public TimeSpan Duration => _duration;
+    public TimeSpan Elapsed => _clock.Elapsed < _duration ? _clock.Elapsed : _duration;
+
+    // Raised on the UI thread whenever IsFading / Progress change (fade start, each frame, and end).
+    public event Action? ProgressChanged;
+
     public CrossfadeEngine()
     {
         _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(25) }; // ~40fps
@@ -38,6 +47,10 @@ public sealed class CrossfadeEngine
             return;
         }
 
+        IsFading = true;
+        Progress = 0.0;
+        ProgressChanged?.Invoke();
+
         Apply(0.0); // snap properties jump immediately; fade properties hold at their start value
         _clock.Restart();
         _timer.Start();
@@ -47,6 +60,13 @@ public sealed class CrossfadeEngine
     {
         _timer.Stop();
         _clock.Reset();
+
+        if (IsFading || Progress != 0.0)
+        {
+            IsFading = false;
+            Progress = 0.0;
+            ProgressChanged?.Invoke();
+        }
     }
 
     private void Tick()
@@ -60,6 +80,8 @@ public sealed class CrossfadeEngine
         }
 
         Apply(t);
+        Progress = t;
+        ProgressChanged?.Invoke();
     }
 
     private void Apply(double t)

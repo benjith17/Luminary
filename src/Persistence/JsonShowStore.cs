@@ -55,6 +55,8 @@ public sealed class JsonShowStore : IShowStore
                 Minor = c.CueMinor,
                 Label = c.Label,
                 FadeSeconds = c.FadeIn.TotalSeconds,
+                Notes = c.Notes,
+                FollowSeconds = c.Follow?.TotalSeconds,
                 Fixtures = c.Fixtures.Select(s => new SnapshotDto
                 {
                     FixtureId = s.FixtureId,
@@ -136,6 +138,8 @@ public sealed class JsonShowStore : IShowStore
                 CueMinor = c.Minor,
                 Label = c.Label,
                 FadeIn = TimeSpan.FromSeconds(c.FadeSeconds),
+                Notes = c.Notes,
+                Follow = c.FollowSeconds is { } s ? TimeSpan.FromSeconds(s) : null,
                 Fixtures = c.Fixtures.Select(s => new CueFixtureSnapshot
                 {
                     FixtureId = s.FixtureId,
