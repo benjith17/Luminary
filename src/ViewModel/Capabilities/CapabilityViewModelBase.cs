@@ -41,15 +41,68 @@ public abstract class CapabilityViewModelBase(FixtureCapability capability) : Vi
         var offset = 0;
         foreach (var param in Parameters)
         {
-            var start = Read(from, offset, param.Width);
-            var target = Read(to, offset, param.Width);
-            var value = param.Fade == FadeBehavior.Snap
-                ? target
-                : (int)Math.Round(start + (target - start) * t);
-            param.SetPlayback(value); // marks playback latest even if the value is unchanged (LTP fix)
+            param.SetPlayback(Blend(param, from, to, offset, t, honourSnap: true));
             param.PlaybackActive = true;
             offset += param.Width;
         }
+    }
+
+    // Drives the playback layer straight to a set of values, with no interpolation. Used by the
+    // keyframe engine, which does its own blending and applies the result in one write.
+    public void ApplyValues(byte[] values)
+    {
+        var offset = 0;
+        foreach (var param in Parameters)
+        {
+            param.SetPlayback(Read(values, offset, param.Width));
+            param.PlaybackActive = true;
+            offset += param.Width;
+        }
+    }
+
+    // Crossfade blend, returned rather than applied: snap parameters jump, fade parameters
+    // interpolate. Same rule as ApplyLerp — use this where a fade's result is needed as a value.
+    public byte[] Lerp(byte[] from, byte[] to, double t) => Blend(from, to, t, honourSnap: true);
+
+    // Authored-curve blend: interpolates every parameter, including ones marked Snap.
+    //
+    // FadeBehavior describes what should happen during a *crossfade*, where the console picks the
+    // path — pan/tilt is marked Snap so positions don't sweep on cue recall. Between two keyframes
+    // the author has said explicitly where the value should be and when, so the curve wins;
+    // honouring Snap here would make every moving-head track teleport between its keys. A
+    // parameter that genuinely must not sweep (a gobo or colour wheel) gets a Hold keyframe.
+    public byte[] Interpolate(byte[] from, byte[] to, double t) => Blend(from, to, t, honourSnap: false);
+
+    private byte[] Blend(byte[] from, byte[] to, double t, bool honourSnap)
+    {
+        var bytes = new byte[Parameters.Sum(p => p.Width)];
+        var offset = 0;
+
+        foreach (var param in Parameters)
+        {
+            var value = Blend(param, from, to, offset, t, honourSnap);
+            if (param.Width == 2)
+            {
+                bytes[offset++] = (byte)(value >> 8);
+                bytes[offset++] = (byte)(value & 0xFF);
+            }
+            else
+            {
+                bytes[offset++] = (byte)value;
+            }
+        }
+
+        return bytes;
+    }
+
+    private static int Blend(CapabilityParameter param, byte[] from, byte[] to, int offset, double t, bool honourSnap)
+    {
+        var start = Read(from, offset, param.Width);
+        var target = Read(to, offset, param.Width);
+
+        return honourSnap && param.Fade == FadeBehavior.Snap
+            ? target
+            : (int)Math.Round(start + (target - start) * t);
     }
 
     // Re-emit every parameter's current output to DMX (used after a re-patch clears the universe).

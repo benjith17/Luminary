@@ -1,0 +1,302 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ViewModel"
+             xmlns:views="using:View"
+             xmlns:conv="using:Avalonia.Data.Converters"
+             x:Class="View.KeyframeEditor"
+             x:DataType="vm:KeyframeEditorViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.tlabel">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText2}" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="LetterSpacing" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Every interactive control in the toolbar is pinned to one height and centred on the row.
+         Left to themselves they disagree: buttons size to their glyph (a ⏮ measured taller than a
+         word), text boxes and check boxes stretch to fill, and Fluent's ComboBox defaults to
+         VerticalAlignment=Top, which with MinHeight=0 left the combos squashed and floating above
+         everything else. -->
+    <Style Selector="TextBox.tiny">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontFamily" Value="Monospace" />
+      <Setter Property="Padding" Value="6 0" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Padding" Value="10 0" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox.tiny">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Padding" Value="8 0" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="CheckBox.tiny">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <!-- Fluent's CheckBox template hardcodes the box's container to Height=32, VerticalAlignment=Top,
+         which the control's own Height can't reach. Left alone in a 24px row that put the 20px box at
+         y=6..26 — clipped at the bottom and sitting well below its own label. Resizing that container
+         to match re-centres the box against the text. -->
+    <Style Selector="CheckBox.tiny /template/ Grid#RootGrid > Grid">
+      <Setter Property="Height" Value="24" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Toolbar group separator: a short centred tick rather than a full-height rule -->
+    <Style Selector="Border.sep">
+      <Setter Property="Width" Value="1" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="3 0" />
+      <Setter Property="Background" Value="{DynamicResource ThemeBorder1}" />
+    </Style>
+    <!-- Monospace readouts: fixed width so the controls after them don't shuffle as digits change -->
+    <Style Selector="TextBlock.readout">
+      <Setter Property="FontFamily" Value="Monospace" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText1}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Track header, accented while that row is the selected one. Clicking anywhere on it
+         selects the track, so the whole name block is the target rather than just the lane. -->
+    <Style Selector="Border.trackhead">
+      <Setter Property="Background" Value="{DynamicResource ThemeBg1}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorder0}" />
+      <Setter Property="BorderThickness" Value="0 0 1 1" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Border.trackhead:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ListItem-Hover}" />
+    </Style>
+    <Style Selector="Border.trackhead.selected">
+      <Setter Property="Background" Value="{DynamicResource ThemeBg3}" />
+    </Style>
+    <Style Selector="Border.trackhead.selected:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ThemeBg4}" />
+    </Style>
+
+    <!-- Per-track "add a key here" button -->
+    <Style Selector="Button.addkey">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeText2}" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.addkey /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorder1}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Button.addkey:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeBg4}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Keys-Accent}" />
+    </Style>
+    <Style Selector="Button.addkey:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource Keys-Accent}" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel Background="{DynamicResource ThemeBg0}">
+
+    <!-- ============ Toolbar ============ -->
+    <Border DockPanel.Dock="Top"
+            Background="{DynamicResource PanelHeader-Bg}"
+            BorderThickness="0 0 0 1"
+            BorderBrush="{DynamicResource ThemeBorder0}"
+            Padding="10 6">
+      <StackPanel Spacing="7">
+
+        <!-- Cue + transport -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="tlabel" Text="CUE" />
+          <ComboBox Classes="tiny" Width="200"
+                    ItemsSource="{Binding KeyCues}"
+                    SelectedItem="{Binding SelectedCue}"
+                    PlaceholderText="No keyframed cues">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:CueViewModel">
+                <TextBlock FontSize="11">
+                  <Run Text="{Binding DisplayNumber}" FontFamily="Monospace" />
+                  <Run Text=" · " />
+                  <Run Text="{Binding Label}" />
+                </TextBlock>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+
+          <Border Classes="sep" />
+
+          <Button Classes="tool" Content="⏮" Command="{Binding RewindCommand}"
+                  IsEnabled="{Binding HasCue}" ToolTip.Tip="Back to the top" />
+          <Button Classes="tool" Content="{Binding PlayLabel}" Command="{Binding PlayPauseCommand}"
+                  IsEnabled="{Binding HasCue}" Width="40" />
+          <TextBlock Classes="readout" Text="{Binding TimeReadout}" Width="164" />
+
+          <Border Classes="sep" />
+
+          <TextBlock Classes="tlabel" Text="LENGTH" />
+          <TextBox Classes="tiny" Width="54" Text="{Binding SequenceDuration, Mode=TwoWay}"
+                   IsEnabled="{Binding HasCue}" ToolTip.Tip="Length of the timeline, in seconds" />
+          <CheckBox Classes="tiny" Content="Loop" IsChecked="{Binding SequenceLoop, Mode=TwoWay}"
+                    IsEnabled="{Binding HasCue}"
+                    ToolTip.Tip="Wrap at the end instead of holding the final values" />
+        </StackPanel>
+
+        <!-- Grid + editing -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="tlabel" Text="BPM" />
+          <TextBox Classes="tiny" Width="50" Text="{Binding Bpm, Mode=TwoWay}" />
+          <ComboBox Classes="tiny" Width="86"
+                    ItemsSource="{Binding Divisions}"
+                    SelectedItem="{Binding SelectedDivision}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:GridDivision">
+                <TextBlock Text="{Binding Label}" FontSize="11" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <CheckBox Classes="tiny" Content="Snap" IsChecked="{Binding SnapEnabled, Mode=TwoWay}"
+                    ToolTip.Tip="Snap keys and the playhead to the beat grid" />
+
+          <Border Classes="sep" />
+
+          <Button Classes="tool" Content="Key All" Command="{Binding RecordKeyCommand}"
+                  IsEnabled="{Binding HasCue}"
+                  ToolTip.Tip="Record the current stage into every track at the playhead" />
+          <Button Classes="tool" Content="Key Track" Command="{Binding RecordTrackKeyCommand}"
+                  ToolTip.Tip="Record the current stage into the selected track only" />
+          <Button Classes="tool" Content="Delete Key" Command="{Binding DeleteKeyCommand}" />
+          <ComboBox Classes="tiny" Width="104"
+                    ItemsSource="{Binding InterpolationOptions}"
+                    SelectedItem="{Binding SelectedKeyInterpolation, Mode=TwoWay}"
+                    IsEnabled="{Binding HasSelectedKey}"
+                    ToolTip.Tip="How the selected key reaches the next one" />
+
+          <Border Classes="sep" />
+
+          <ComboBox Classes="tiny" Width="150"
+                    ItemsSource="{Binding AvailableFixtures}"
+                    SelectedItem="{Binding SelectedFixtureForAdd}"
+                    PlaceholderText="Fixture">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FixtureListItemViewModel">
+                <TextBlock FontSize="11">
+                  <Run Text="{Binding Number}" FontFamily="Monospace" />
+                  <Run Text=" · " />
+                  <Run Text="{Binding Name}" />
+                </TextBlock>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Classes="tool" Content="Add Tracks" Command="{Binding AddTracksCommand}"
+                  IsEnabled="{Binding HasCue}"
+                  ToolTip.Tip="Add a track for each capability of this fixture" />
+          <Button Classes="tool" Content="Remove Track" Command="{Binding RemoveTrackCommand}" />
+        </StackPanel>
+
+      </StackPanel>
+    </Border>
+
+    <!-- ============ Timeline ============ -->
+    <Panel>
+
+      <!-- Empty state -->
+      <TextBlock IsVisible="{Binding !HasCue}"
+                 Text="No keyframed cue selected.&#10;Record one in the cue list with the Keys button."
+                 TextAlignment="Center"
+                 Foreground="{DynamicResource ThemeText2}" FontSize="12"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+      <Grid IsVisible="{Binding HasCue}"
+            ColumnDefinitions="200,*" RowDefinitions="22,*">
+
+        <!-- Corner -->
+        <Border Grid.Row="0" Grid.Column="0"
+                Background="{DynamicResource ThemeBg1}"
+                BorderThickness="0 0 1 1" BorderBrush="{DynamicResource ThemeBorder0}">
+          <TextBlock Classes="tlabel" Text="TRACKS" Margin="10 0" />
+        </Border>
+
+        <!-- Ruler -->
+        <views:TimelineRuler Grid.Row="0" Grid.Column="1"
+                             Editor="{Binding}"
+                             DurationSeconds="{Binding DurationSeconds}"
+                             GridSeconds="{Binding GridSeconds}" />
+
+        <!-- Track rows: header and lane share a row so they scroll together -->
+        <ScrollViewer Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+          <Panel>
+            <TextBlock IsVisible="{Binding !Tracks.Count}"
+                       Text="No tracks yet — pick a fixture above and press Add Tracks."
+                       Foreground="{DynamicResource ThemeText2}" FontSize="12"
+                       HorizontalAlignment="Center" Margin="0 40" />
+
+            <ItemsControl ItemsSource="{Binding Tracks}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:KeyframeTrackViewModel">
+                  <Grid ColumnDefinitions="200,*" Height="34">
+                    <Border Grid.Column="0" Classes="trackhead"
+                            Classes.selected="{Binding IsSelected}"
+                            PointerPressed="OnTrackHeaderPressed">
+                      <DockPanel Margin="10 0 6 0">
+                        <Button DockPanel.Dock="Right" Classes="addkey" Content="+"
+                                Command="{Binding AddKeyCommand}"
+                                ToolTip.Tip="Record this track's current value as a key at the playhead" />
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                          <TextBlock Text="{Binding FixtureLabel}"
+                                     Foreground="{DynamicResource ThemeText0}"
+                                     FontSize="11" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding CapabilityLabel}"
+                                     Foreground="{DynamicResource ThemeText2}"
+                                     FontSize="9" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                      </DockPanel>
+                    </Border>
+
+                    <views:KeyframeLane Grid.Column="1"
+                                        Track="{Binding}"
+                                        Revision="{Binding Revision}"
+                                        DurationSeconds="{Binding DurationSeconds}"
+                                        GridSeconds="{Binding GridSeconds}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Panel>
+        </ScrollViewer>
+
+        <!-- Playhead spans the ruler and the track area, outside the scroller -->
+        <views:PlayheadOverlay Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                               Fraction="{Binding PlayheadFraction}"
+                               IsHitTestVisible="False" />
+      </Grid>
+    </Panel>
+
+  </DockPanel>
+</UserControl>

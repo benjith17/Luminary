@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ViewModel"
+             xmlns:views="using:View"
+             x:Class="View.KeyframesView"
+             x:DataType="vm:MainWindowViewModel">
+
+  <!-- Keyframes tab: fixtures list and the capability editor across the top, so a look can be
+       built without leaving the tab, with the timeline spanning the full width underneath —
+       tracks need the horizontal room far more than the fixture list does. Both panels share the
+       Program tab's view models, so a fixture selected in one tab is selected in the other. -->
+  <Grid Background="{DynamicResource ThemeBg0}">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="260"/>
+      <RowDefinition Height="4"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <!-- Programming strip: pick a fixture, set its values -->
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="180"/>
+        <ColumnDefinition Width="4"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Column="0" Background="{DynamicResource Panel-Bg}">
+        <views:FixturesListPanel DataContext="{Binding FixturesListPanel}"/>
+      </Border>
+
+      <GridSplitter Classes="themed vertical" Grid.Column="1" />
+
+      <Border Grid.Column="2" Background="{DynamicResource Panel-Bg}">
+        <views:FixtureEditor DataContext="{Binding FixtureEditor}"/>
+      </Border>
+    </Grid>
+
+    <GridSplitter Classes="themed horizontal" Grid.Row="1" />
+
+    <!-- Timeline, full width -->
+    <Border Grid.Row="2" Background="{DynamicResource Panel-Bg}">
+      <views:KeyframeEditor DataContext="{Binding KeyframeEditor}"/>
+    </Border>
+  </Grid>
+
+</UserControl>

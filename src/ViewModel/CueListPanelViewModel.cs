@@ -14,10 +14,15 @@ public partial class CueListPanelViewModel : ViewModelBase
     private readonly FixturesListPanelViewModel fixtures;
     private readonly CrossfadeEngine _crossfade = new();
     private readonly ChaseEngine _chase = new();
+    private readonly KeyframeEngine _keys = new();
 
     // The cue whose chase is currently looping, so the inspector can highlight the live step only
     // when that cue's steps are the ones on screen.
     private CueViewModel? _chaseCue;
+
+    // The cue the keyframe engine is attached to, whether for playback or for editing in the
+    // Keyframes tab.
+    private CueViewModel? _keysCue;
 
     // Repeating timer driving the auto-follow countdown; when the clock reaches the follow duration
     // it fires _followTarget. Kept as its own clock so the strip can show a live countdown.
@@ -36,6 +41,7 @@ public partial class CueListPanelViewModel : ViewModelBase
 
         _crossfade.ProgressChanged += OnCrossfadeProgress;
         _chase.ProgressChanged += OnChaseProgress;
+        _keys.ProgressChanged += OnKeysProgress;
         _followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(25) }; // ~40fps
         _followTimer.Tick += OnFollowTick;
     }
@@ -85,9 +91,20 @@ public partial class CueListPanelViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsChaseRunning { get; set; }
 
+    // Progress through a running keyframed cue. Driven by the same engine the Keyframes tab uses,
+    // so the strip follows show playback but stays quiet while the editor is merely scrubbing.
+    [ObservableProperty]
+    public partial double KeysProgress { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsKeysRunning { get; set; }
+
     // What the bar shows: a pending auto-follow countdown wins, then a running chase, then the fade.
     public double ProgressValue =>
-        IsFollowPending ? FollowProgress : IsChaseRunning ? ChaseProgress : FadeProgress;
+        IsFollowPending ? FollowProgress
+        : IsChaseRunning ? ChaseProgress
+        : IsKeysRunning ? KeysProgress
+        : FadeProgress;
 
     // "follow e / t s" while counting down to an auto-follow, "step n / total" while a chase runs,
     // "e / t s" while fading, else the selected cue's fade time.
@@ -96,15 +113,19 @@ public partial class CueListPanelViewModel : ViewModelBase
             ? $"follow {_followClock.Elapsed.TotalSeconds:0.0} / {_followDuration.TotalSeconds:0.0}s"
             : _chase.IsRunning
                 ? $"step {_chase.StepIndex + 1} / {_chase.StepCount}"
-                : _crossfade.IsFading
-                    ? $"{_crossfade.Elapsed.TotalSeconds:0.0} / {_crossfade.Duration.TotalSeconds:0.0}s"
-                    : SelectedCue?.FadeDisplay ?? "—";
+                : _keys.IsRunning
+                    ? $"{_keys.CurrentTime.TotalSeconds:0.0} / {_keys.Duration.TotalSeconds:0.0}s"
+                    : _crossfade.IsFading
+                        ? $"{_crossfade.Elapsed.TotalSeconds:0.0} / {_crossfade.Duration.TotalSeconds:0.0}s"
+                        : SelectedCue?.FadeDisplay ?? "—";
 
     partial void OnFadeProgressChanged(double value) => NotifyProgress();
     partial void OnFollowProgressChanged(double value) => NotifyProgress();
     partial void OnIsFollowPendingChanged(bool value) => NotifyProgress();
     partial void OnChaseProgressChanged(double value) => NotifyProgress();
     partial void OnIsChaseRunningChanged(bool value) => NotifyProgress();
+    partial void OnKeysProgressChanged(double value) => NotifyProgress();
+    partial void OnIsKeysRunningChanged(bool value) => NotifyProgress();
 
     private void NotifyProgress()
     {
@@ -113,6 +134,12 @@ public partial class CueListPanelViewModel : ViewModelBase
     }
 
     private void OnCrossfadeProgress() => FadeProgress = _crossfade.Progress;
+
+    private void OnKeysProgress()
+    {
+        KeysProgress = _keys.Progress;
+        IsKeysRunning = _keys.IsRunning;
+    }
 
     private void OnChaseProgress()
     {
@@ -133,7 +160,55 @@ public partial class CueListPanelViewModel : ViewModelBase
     {
         _chase.Stop();
         _crossfade.Stop();
+        _keys.Stop();
+        _keysCue = null;
+        _chaseCue = null;
         CancelFollow();
+    }
+
+    // The keyframe engine, shared with the Keyframes tab. There is only one rig, so scrubbing the
+    // editor and firing the cue drive the same fixtures through the same engine.
+    public KeyframeEngine Keyframes => _keys;
+
+    // The cue the keyframe engine is currently attached to, so the editor can tell whether the
+    // sequence on screen is the one loaded.
+    public CueViewModel? KeyframeCue => _keysCue;
+
+    // Raised when the operator asks to edit a keyframed cue, so the window can switch tabs.
+    public event Action<CueViewModel>? EditKeyframesRequested;
+
+    [RelayCommand]
+    private void EditKeyframes()
+    {
+        if (SelectedCue is { IsKeys: true } cue) EditKeyframesRequested?.Invoke(cue);
+    }
+
+    // Attaches the engine to a cue for editing: parked at the top, not running. Other playback is
+    // stopped first so a chase can't fight the sequence being previewed.
+    public void LoadKeyframesForEditing(CueViewModel cueVm)
+    {
+        if (!cueVm.IsKeys) return;
+
+        _chase.Stop();
+        _chaseCue = null;
+        _crossfade.Stop();
+
+        _keysCue = cueVm;
+        _keys.Load(ResolveKeyTracks(cueVm.Model), cueVm.Model.Keys.Duration, cueVm.Model.Keys.Loop);
+    }
+
+    // Re-resolves the loaded cue's tracks after the editor adds or removes one. Keys themselves are
+    // held by reference, so edits to an existing track need no reload.
+    public void ReloadKeyframeTracks()
+    {
+        if (_keysCue is null) return;
+
+        var at = _keys.CurrentTime;
+        var running = _keys.IsRunning;
+
+        _keys.Load(ResolveKeyTracks(_keysCue.Model), _keysCue.Model.Keys.Duration, _keysCue.Model.Keys.Loop);
+        _keys.Seek(at);
+        if (running) _keys.Resume();
     }
 
     [RelayCommand]
@@ -212,6 +287,19 @@ public partial class CueListPanelViewModel : ViewModelBase
         };
         InsertSorted(cue);
         SyncActiveIndex();
+    }
+
+    // Record an empty keyframed cue. Tracks and keys are added in the Keyframes tab, so this just
+    // creates the cue and hands it over.
+    [RelayCommand]
+    private void RecordKeys()
+    {
+        var (major, minor) = NextCueNumber();
+        var cue = new Cue { CueMajor = major, CueMinor = minor, Type = CueType.Keys };
+        InsertSorted(cue);
+        SyncActiveIndex();
+
+        if (SelectedCue is { } added) EditKeyframesRequested?.Invoke(added);
     }
 
     // Re-record the current stage into the selection, keeping numbers, labels, fades and notes.
@@ -301,11 +389,17 @@ public partial class CueListPanelViewModel : ViewModelBase
         var index = Cues.IndexOf(SelectedCue);
         if (SelectedCue == ActiveCue) ActiveCue = null;
 
-        // Deleting the cue a chase is looping would leave it running with no cue behind it.
+        // Deleting the cue a timed engine is attached to would leave it running with no cue behind it.
         if (ReferenceEquals(_chaseCue, SelectedCue))
         {
             _chase.Stop();
             _chaseCue = null;
+        }
+
+        if (ReferenceEquals(_keysCue, SelectedCue))
+        {
+            _keys.Stop();
+            _keysCue = null;
         }
 
         showService.CueList.Cues.RemoveAt(index);
@@ -370,23 +464,34 @@ public partial class CueListPanelViewModel : ViewModelBase
 
     private void Recall(CueViewModel cueVm)
     {
-        // Any GO ends a running chase. It stops where it stands rather than releasing, so the
-        // incoming cue crossfades out of the frozen look instead of snapping — both engines take
-        // their start point from the live output.
+        // Any GO ends whatever was running. Both timed engines stop where they stand rather than
+        // releasing, so the incoming cue crossfades out of the frozen look instead of snapping —
+        // every engine takes its start point from the live output.
         _chase.Stop();
         _chaseCue = null;
+        _keys.Stop();
+        _keysCue = null;
 
-        if (cueVm.IsChase)
+        switch (cueVm.Model.Type)
         {
-            // A chase supplies its own per-step fades, so cancel any crossfade still in flight
-            // rather than letting the two engines drive the same parameters.
-            _crossfade.Stop();
-            StartChase(cueVm);
-        }
-        else
-        {
-            // Crossfade from the current live state to the cue over its fade time (0 = hard cut).
-            _crossfade.Start(ResolveTargets(cueVm.Model.Fixtures), cueVm.Model.FadeIn);
+            case CueType.Chase:
+                // A chase supplies its own per-step fades, so cancel any crossfade still in flight
+                // rather than letting two engines drive the same parameters.
+                _crossfade.Stop();
+                StartChase(cueVm);
+                break;
+
+            case CueType.Keys:
+                _crossfade.Stop();
+                _keysCue = cueVm;
+                _keys.Play(ResolveKeyTracks(cueVm.Model), cueVm.Model.Keys.Duration,
+                    cueVm.Model.Keys.Loop, cueVm.Model.FadeIn);
+                break;
+
+            default:
+                // Crossfade from the current live state to the cue over its fade time (0 = hard cut).
+                _crossfade.Start(ResolveTargets(cueVm.Model.Fixtures), cueVm.Model.FadeIn);
+                break;
         }
 
         foreach (var vm in Cues) vm.IsActive = false;
@@ -414,6 +519,25 @@ public partial class CueListPanelViewModel : ViewModelBase
         }
 
         return targets;
+    }
+
+    // Resolves a keyframed cue's tracks to the capability VMs they drive. Tracks whose fixture has
+    // been deleted, or whose capability index no longer exists, are dropped rather than throwing —
+    // the same tolerance cue snapshots have for a missing fixture.
+    public List<KeyframeTrackTargets> ResolveKeyTracks(Cue cue)
+    {
+        var resolved = new List<KeyframeTrackTargets>();
+
+        foreach (var track in cue.Keys.Tracks)
+        {
+            var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Fixture.Id == track.FixtureId);
+            if (fixtureVm is null) continue;
+            if (track.CapabilityIndex < 0 || track.CapabilityIndex >= fixtureVm.Capabilities.Count) continue;
+
+            resolved.Add(new KeyframeTrackTargets(fixtureVm.Capabilities[track.CapabilityIndex], track.Keys));
+        }
+
+        return resolved;
     }
 
     // Resolves and launches a chase cue's steps. Steps that resolve to nothing (every fixture gone)

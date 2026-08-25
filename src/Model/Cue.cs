@@ -24,5 +24,8 @@ public class Cue
     // Type is Chase.
     public Chase Chase { get; set; } = new();
 
+    // Keyframe content, likewise always present and only meaningful when Type is Keys.
+    public KeyframeSequence Keys { get; set; } = new();
+
     public string DisplayNumber => CueMinor == 0 ? $"{CueMajor}" : $"{CueMajor}.{CueMinor}";
 }

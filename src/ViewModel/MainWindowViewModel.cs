@@ -41,6 +41,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial BindingsWindowViewModel? BindingsPanel { get; set; }
 
+    // The Keyframes tab, rebuilt with the rest of the show-bound panels.
+    [ObservableProperty]
+    public partial KeyframeEditorViewModel? KeyframeEditor { get; set; }
+
+    // Which workspace tab is showing. Settable so the cue list can send the operator to the
+    // Keyframes tab when they choose to edit a keyframed cue.
+    [ObservableProperty]
+    public partial int SelectedTab { get; set; }
+
+    // Index of the Keyframes tab in MainWindow's TabControl.
+    private const int KeyframesTab = 1;
+
     // App-level macro host driving the live show — shared by the Macros window and (later) input
     // bindings, so every input source runs macros against the same fixtures / cues / blackout.
     public MacroHost? MacroHost { get; private set; }
@@ -106,6 +118,8 @@ public partial class MainWindowViewModel : ViewModelBase
         FixturesListPanel.SelectedFixture = FixturesListPanel.Fixtures.FirstOrDefault();
 
         CueListPanel = new CueListPanelViewModel(show, FixturesListPanel);
+        KeyframeEditor = new KeyframeEditorViewModel(FixturesListPanel, CueListPanel);
+        CueListPanel.EditKeyframesRequested += OnEditKeyframesRequested;
         // Blackout is routed through this VM's property so macro-driven changes keep the toggle in sync.
         MacroHost = new MacroHost(FixturesListPanel, CueListPanel,
             getBlackout: () => Blackout, setBlackout: v => Blackout = v);
@@ -126,6 +140,13 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (MacroHost is not null)
             _midiDispatcher = new MidiBindingDispatcher(_show.Bindings, MacroHost);
+    }
+
+    // "Edit" on a keyframed cue jumps to the Keyframes tab with that cue open.
+    private void OnEditKeyframesRequested(CueViewModel cue)
+    {
+        KeyframeEditor?.Edit(cue);
+        SelectedTab = KeyframesTab;
     }
 
     private void OnFixtureSelectionChanged(object? sender, PropertyChangedEventArgs e)

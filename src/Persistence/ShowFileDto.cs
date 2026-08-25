@@ -6,9 +6,9 @@ namespace Persistence;
 
 public sealed class ShowFileDto
 {
-    // 1: snapshot cues only. 2: adds cue Type / Chase. Version 1 files load unchanged — an
-    // absent type reads as a snapshot cue.
-    public int Version { get; set; } = 2;
+    // 1: snapshot cues only. 2: adds cue Type / Chase. 3: adds Keys. Older files load unchanged —
+    // an absent type reads as a snapshot cue.
+    public int Version { get; set; } = 3;
     public List<UniverseDto> Universes { get; set; } = [];
     public List<FixtureDto> Fixtures { get; set; } = [];
     public CueListDto CueList { get; set; } = new();
@@ -79,9 +79,31 @@ public sealed class CueDto
     public double FadeSeconds { get; set; }
     public string Notes { get; set; } = string.Empty;
     public double? FollowSeconds { get; set; }          // null = no auto-follow
-    public string? Type { get; set; }                   // null / "snapshot" | "chase"
+    public string? Type { get; set; }                   // null / "snapshot" | "chase" | "keys"
     public List<SnapshotDto> Fixtures { get; set; } = [];
     public ChaseDto? Chase { get; set; }                // present only on chase cues
+    public KeysDto? Keys { get; set; }                  // present only on keyframed cues
+}
+
+public sealed class KeysDto
+{
+    public double DurationSeconds { get; set; }
+    public bool Loop { get; set; }
+    public List<TrackDto> Tracks { get; set; } = [];
+}
+
+public sealed class TrackDto
+{
+    public Guid FixtureId { get; set; }
+    public int CapabilityIndex { get; set; }            // position within the fixture's personality
+    public List<KeyDto> Keys { get; set; } = [];
+}
+
+public sealed class KeyDto
+{
+    public double TimeSeconds { get; set; }
+    public byte[] Values { get; set; } = [];            // capability-shaped, as Capture() produces
+    public string Interpolation { get; set; } = "linear";
 }
 
 public sealed class ChaseDto

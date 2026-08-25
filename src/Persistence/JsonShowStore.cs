@@ -26,7 +26,7 @@ public sealed class JsonShowStore : IShowStore
 
     private static ShowFileDto ToDto(ShowService show) => new()
     {
-        Version = 2,
+        Version = 3,
         Universes = show.Universes.Select(u => new UniverseDto
         {
             Number = u.Number,
@@ -57,7 +57,7 @@ public sealed class JsonShowStore : IShowStore
                 FadeSeconds = c.FadeIn.TotalSeconds,
                 Notes = c.Notes,
                 FollowSeconds = c.Follow?.TotalSeconds,
-                Type = c.Type == CueType.Chase ? "chase" : null,
+                Type = c.Type switch { CueType.Chase => "chase", CueType.Keys => "keys", _ => null },
                 Fixtures = ToSnapshotDtos(c.Fixtures),
                 // Omitted entirely for snapshot cues, so their serialized form is unchanged.
                 Chase = c.Type == CueType.Chase
@@ -68,6 +68,24 @@ public sealed class JsonShowStore : IShowStore
                         {
                             DurationSeconds = s.Duration.TotalSeconds,
                             Fixtures = ToSnapshotDtos(s.Fixtures)
+                        }).ToList()
+                    }
+                    : null,
+                Keys = c.Type == CueType.Keys
+                    ? new KeysDto
+                    {
+                        DurationSeconds = c.Keys.Duration.TotalSeconds,
+                        Loop = c.Keys.Loop,
+                        Tracks = c.Keys.Tracks.Select(t => new TrackDto
+                        {
+                            FixtureId = t.FixtureId,
+                            CapabilityIndex = t.CapabilityIndex,
+                            Keys = t.Keys.Select(k => new KeyDto
+                            {
+                                TimeSeconds = k.Time.TotalSeconds,
+                                Values = k.Values,
+                                Interpolation = k.Interpolation.ToString().ToLowerInvariant()
+                            }).ToList()
                         }).ToList()
                     }
                     : null
@@ -90,6 +108,11 @@ public sealed class JsonShowStore : IShowStore
             }
         }).ToList()
     };
+
+    // Unknown values fall back to linear rather than throwing, so a file written by a newer build
+    // still opens.
+    private static Interpolation ParseInterpolation(string? name) =>
+        Enum.TryParse<Interpolation>(name, ignoreCase: true, out var parsed) ? parsed : Interpolation.Linear;
 
     private static List<SnapshotDto> ToSnapshotDtos(List<CueFixtureSnapshot> snapshots) =>
         snapshots.Select(s => new SnapshotDto { FixtureId = s.FixtureId, Values = s.CapabilityValues }).ToList();
@@ -155,7 +178,7 @@ public sealed class JsonShowStore : IShowStore
                 FadeIn = TimeSpan.FromSeconds(c.FadeSeconds),
                 Notes = c.Notes,
                 Follow = c.FollowSeconds is { } s ? TimeSpan.FromSeconds(s) : null,
-                Type = c.Type == "chase" ? CueType.Chase : CueType.Snapshot,
+                Type = c.Type switch { "chase" => CueType.Chase, "keys" => CueType.Keys, _ => CueType.Snapshot },
                 Fixtures = FromSnapshotDtos(c.Fixtures),
                 Chase = c.Chase is { } chase
                     ? new Chase
@@ -167,7 +190,27 @@ public sealed class JsonShowStore : IShowStore
                             Fixtures = FromSnapshotDtos(s.Fixtures)
                         }).ToList()
                     }
-                    : new Chase()
+                    : new Chase(),
+                Keys = c.Keys is { } keys
+                    ? new KeyframeSequence
+                    {
+                        Duration = TimeSpan.FromSeconds(keys.DurationSeconds),
+                        Loop = keys.Loop,
+                        Tracks = keys.Tracks.Select(t => new KeyframeTrack
+                        {
+                            FixtureId = t.FixtureId,
+                            CapabilityIndex = t.CapabilityIndex,
+                            // Sorted on load: playback binary-searches the list, and a hand-edited
+                            // file has no other guarantee of order.
+                            Keys = t.Keys.OrderBy(k => k.TimeSeconds).Select(k => new Keyframe
+                            {
+                                Time = TimeSpan.FromSeconds(k.TimeSeconds),
+                                Values = k.Values,
+                                Interpolation = ParseInterpolation(k.Interpolation)
+                            }).ToList()
+                        }).ToList()
+                    }
+                    : new KeyframeSequence()
             }).ToList()
         };
 

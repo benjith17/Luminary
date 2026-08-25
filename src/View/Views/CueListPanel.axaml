@@ -10,6 +10,7 @@
     <SolidColorBrush x:Key="Live-Accent" Color="#54B57B" />
     <SolidColorBrush x:Key="Next-Accent" Color="#5E93CF" />
     <SolidColorBrush x:Key="Chase-Accent" Color="#D2A048" />
+    <SolidColorBrush x:Key="Keys-Accent" Color="#9B7BD4" />
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -58,13 +59,24 @@
     <Style Selector="ProgressBar.transport.chase">
       <Setter Property="Foreground" Value="{DynamicResource Chase-Accent}" />
     </Style>
+    <Style Selector="ProgressBar.transport.keys">
+      <Setter Property="Foreground" Value="{DynamicResource Keys-Accent}" />
+    </Style>
     <Style Selector="ProgressBar.transport.follow">
       <Setter Property="Foreground" Value="{DynamicResource Next-Accent}" />
     </Style>
 
-    <!-- "CHASE" row badge -->
+    <!-- Cue-type row badge -->
     <Style Selector="Border.chase-badge">
       <Setter Property="BorderBrush" Value="{DynamicResource Chase-Accent}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="4 0" />
+      <Setter Property="Margin" Value="0 0 6 0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.keys-badge">
+      <Setter Property="BorderBrush" Value="{DynamicResource Keys-Accent}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="3" />
       <Setter Property="Padding" Value="4 0" />
@@ -162,6 +174,7 @@
         <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressValue}"
                      Classes="transport" Classes.follow="{Binding IsFollowPending}"
                      Classes.chase="{Binding IsChaseRunning}"
+                     Classes.keys="{Binding IsKeysRunning}"
                      Height="5" MinHeight="0" CornerRadius="3"
                      Background="{DynamicResource ThemeBg3}"
                      VerticalAlignment="Center" Margin="14 0 6 0" />
@@ -188,6 +201,8 @@
           <Button Classes="themed" Content="Record" Command="{Binding RecordCommand}" Padding="10 5" FontSize="11" />
           <Button Classes="themed" Content="Chase" Command="{Binding RecordChaseCommand}" Padding="10 5" FontSize="11"
                   ToolTip.Tip="Record a chase cue, seeded with the current stage as its first step" />
+          <Button Classes="themed" Content="Keys" Command="{Binding RecordKeysCommand}" Padding="10 5" FontSize="11"
+                  ToolTip.Tip="Record a keyframed cue and open it in the Keyframes tab" />
           <Button Classes="themed" Content="Update" Command="{Binding UpdateCommand}" Padding="10 5" FontSize="11"
                   ToolTip.Tip="Re-record the current stage into the selected cue (or into the selected step of a chase)" />
         </StackPanel>
@@ -232,6 +247,10 @@
                   <DockPanel IsVisible="{Binding !IsEditing}">
                     <Border DockPanel.Dock="Left" Classes="chase-badge" IsVisible="{Binding IsChase}">
                       <TextBlock Text="CHASE" Foreground="{DynamicResource Chase-Accent}"
+                                 FontSize="8" FontWeight="Bold" LetterSpacing="1" />
+                    </Border>
+                    <Border DockPanel.Dock="Left" Classes="keys-badge" IsVisible="{Binding IsKeys}">
+                      <TextBlock Text="KEYS" Foreground="{DynamicResource Keys-Accent}"
                                  FontSize="8" FontWeight="Bold" LetterSpacing="1" />
                     </Border>
                     <TextBlock Text="{Binding Label}"
@@ -311,6 +330,24 @@
                        ToolTip.Tip="Crossfade into each step. 0 snaps. Fade In above covers the entry into step 1." />
             </StackPanel>
 
+            <!-- Keyframed cue: summary and a way into the editor -->
+            <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
+                    IsVisible="{Binding SelectedCue.IsKeys}"
+                    BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" Padding="11">
+              <StackPanel Spacing="9">
+                <TextBlock Classes="ilabel" Text="KEYFRAMES" />
+                <TextBlock Text="{Binding SelectedCue.KeysSummary}"
+                           Foreground="{DynamicResource ThemeText1}"
+                           FontFamily="Monospace" FontSize="12" />
+                <CheckBox Content="Loop" IsChecked="{Binding SelectedCue.KeysLoop, Mode=TwoWay}"
+                          FontSize="11" MinHeight="0"
+                          ToolTip.Tip="Wrap at the end instead of holding the final values" />
+                <Button Classes="themed" Content="Edit in Keyframes tab"
+                        Command="{Binding EditKeyframesCommand}"
+                        HorizontalAlignment="Stretch" Padding="10 5" FontSize="11" />
+              </StackPanel>
+            </Border>
+
             <!-- Chase steps -->
             <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
                     IsVisible="{Binding SelectedCue.IsChase}"
@@ -364,7 +401,7 @@
 
             <!-- Contents (snapshot cues) -->
             <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
-                    IsVisible="{Binding !SelectedCue.IsChase}"
+                    IsVisible="{Binding SelectedCue.IsSnapshot}"
                     BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" Padding="11">
               <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">

@@ -9,9 +9,19 @@ public partial class CueViewModel(Cue cue) : ViewModelBase
 
     public string DisplayNumber => Model.DisplayNumber;
 
-    // Chase cues loop their own step list instead of fading to a single look. Drives the row
-    // badge and swaps the inspector between snapshot contents and the step editor.
+    // Cue kind, driving the row badge and which inspector section is shown. A cue's type is set
+    // when it is recorded and never changes, so these need no change notification.
     public bool IsChase => Model.Type == CueType.Chase;
+    public bool IsKeys => Model.Type == CueType.Keys;
+    public bool IsSnapshot => Model.Type == CueType.Snapshot;
+
+    // Badge text for the cue row; empty for a plain snapshot cue.
+    public string TypeBadge => Model.Type switch
+    {
+        CueType.Chase => "CHASE",
+        CueType.Keys => "KEYS",
+        _ => ""
+    };
 
     public string Label
     {
@@ -66,6 +76,39 @@ public partial class CueViewModel(Cue cue) : ViewModelBase
             SetProperty(Model.Chase.StepFade.TotalSeconds, seconds, Model,
                 (m, v) => m.Chase.StepFade = TimeSpan.FromSeconds(v));
         }
+    }
+
+    // Length of the keyframe timeline, edited in seconds. Floored so the ruler always has extent.
+    public double KeysDurationSeconds
+    {
+        get => Model.Keys.Duration.TotalSeconds;
+        set
+        {
+            var seconds = Math.Max(0.1, value);
+            if (SetProperty(Model.Keys.Duration.TotalSeconds, seconds, Model,
+                    (m, v) => m.Keys.Duration = TimeSpan.FromSeconds(v)))
+                OnPropertyChanged(nameof(KeysSummary));
+        }
+    }
+
+    // Whether the keyframe timeline wraps at its duration or runs once and holds.
+    public bool KeysLoop
+    {
+        get => Model.Keys.Loop;
+        set => SetProperty(Model.Keys.Loop, value, Model, (m, v) => m.Keys.Loop = v);
+    }
+
+    public int TrackCount => Model.Keys.Tracks.Count;
+
+    public string KeysSummary =>
+        $"{Model.Keys.Tracks.Count} tracks · {Model.Keys.Tracks.Sum(t => t.Keys.Count)} keys · " +
+        $"{Model.Keys.Duration.TotalSeconds:0.#}s";
+
+    // Editing the sequence in the Keyframes tab changes counts the cue list shows.
+    public void NotifyKeysChanged()
+    {
+        OnPropertyChanged(nameof(TrackCount));
+        OnPropertyChanged(nameof(KeysSummary));
     }
 
     // Number of fixtures captured in this cue (shown in the inspector's Contents).

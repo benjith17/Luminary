@@ -5,7 +5,8 @@ namespace Model;
 public enum CueType
 {
     Snapshot,
-    Chase
+    Chase,
+    Keys
 }
 
 // Chase content of a cue: an endless loop over its steps, started by GO and stopped by the next

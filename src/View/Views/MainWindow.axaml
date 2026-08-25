@@ -88,9 +88,13 @@
     </Border>
 
     <!-- Workspace tabs -->
-    <TabControl Classes="workspace" Background="{DynamicResource ThemeBg0}">
+    <TabControl Classes="workspace" Background="{DynamicResource ThemeBg0}"
+                SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabItem Header="Program">
         <views:ProgramView />
+      </TabItem>
+      <TabItem Header="Keyframes">
+        <views:KeyframesView />
       </TabItem>
       <!-- Temporary home for the effects + macros panels until their own tab is defined. -->
       <TabItem Header="Effects">
