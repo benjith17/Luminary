@@ -26,7 +26,7 @@ public sealed class JsonShowStore : IShowStore
 
     private static ShowFileDto ToDto(ShowService show) => new()
     {
-        Version = 1,
+        Version = 2,
         Universes = show.Universes.Select(u => new UniverseDto
         {
             Number = u.Number,
@@ -57,11 +57,20 @@ public sealed class JsonShowStore : IShowStore
                 FadeSeconds = c.FadeIn.TotalSeconds,
                 Notes = c.Notes,
                 FollowSeconds = c.Follow?.TotalSeconds,
-                Fixtures = c.Fixtures.Select(s => new SnapshotDto
-                {
-                    FixtureId = s.FixtureId,
-                    Values = s.CapabilityValues
-                }).ToList()
+                Type = c.Type == CueType.Chase ? "chase" : null,
+                Fixtures = ToSnapshotDtos(c.Fixtures),
+                // Omitted entirely for snapshot cues, so their serialized form is unchanged.
+                Chase = c.Type == CueType.Chase
+                    ? new ChaseDto
+                    {
+                        StepFadeSeconds = c.Chase.StepFade.TotalSeconds,
+                        Steps = c.Chase.Steps.Select(s => new ChaseStepDto
+                        {
+                            DurationSeconds = s.Duration.TotalSeconds,
+                            Fixtures = ToSnapshotDtos(s.Fixtures)
+                        }).ToList()
+                    }
+                    : null
             }).ToList()
         },
         Macros = show.Macros.Select(m => new MacroDto { Name = m.Name, Source = m.Source }).ToList(),
@@ -81,6 +90,12 @@ public sealed class JsonShowStore : IShowStore
             }
         }).ToList()
     };
+
+    private static List<SnapshotDto> ToSnapshotDtos(List<CueFixtureSnapshot> snapshots) =>
+        snapshots.Select(s => new SnapshotDto { FixtureId = s.FixtureId, Values = s.CapabilityValues }).ToList();
+
+    private static List<CueFixtureSnapshot> FromSnapshotDtos(List<SnapshotDto> dtos) =>
+        dtos.Select(s => new CueFixtureSnapshot { FixtureId = s.FixtureId, CapabilityValues = s.Values }).ToList();
 
     private static ShowService FromDto(ShowFileDto dto, FixtureLibrary library)
     {
@@ -140,11 +155,19 @@ public sealed class JsonShowStore : IShowStore
                 FadeIn = TimeSpan.FromSeconds(c.FadeSeconds),
                 Notes = c.Notes,
                 Follow = c.FollowSeconds is { } s ? TimeSpan.FromSeconds(s) : null,
-                Fixtures = c.Fixtures.Select(s => new CueFixtureSnapshot
-                {
-                    FixtureId = s.FixtureId,
-                    CapabilityValues = s.Values
-                }).ToList()
+                Type = c.Type == "chase" ? CueType.Chase : CueType.Snapshot,
+                Fixtures = FromSnapshotDtos(c.Fixtures),
+                Chase = c.Chase is { } chase
+                    ? new Chase
+                    {
+                        StepFade = TimeSpan.FromSeconds(chase.StepFadeSeconds),
+                        Steps = chase.Steps.Select(s => new ChaseStep
+                        {
+                            Duration = TimeSpan.FromSeconds(s.DurationSeconds),
+                            Fixtures = FromSnapshotDtos(s.Fixtures)
+                        }).ToList()
+                    }
+                    : new Chase()
             }).ToList()
         };
 

@@ -9,6 +9,10 @@ public partial class CueViewModel(Cue cue) : ViewModelBase
 
     public string DisplayNumber => Model.DisplayNumber;
 
+    // Chase cues loop their own step list instead of fading to a single look. Drives the row
+    // badge and swaps the inspector between snapshot contents and the step editor.
+    public bool IsChase => Model.Type == CueType.Chase;
+
     public string Label
     {
         get => Model.Label;
@@ -50,6 +54,19 @@ public partial class CueViewModel(Cue cue) : ViewModelBase
 
     // Compact follow readout for the table column ("—" when off).
     public string FollowDisplay => Model.Follow is { } f ? $"{f.TotalSeconds:0.#}s" : "—";
+
+    // Crossfade into each chase step, edited in seconds. The cue's own FadeIn covers the entry
+    // into the first step, so a chase can ease in and still snap between steps.
+    public double StepFadeSeconds
+    {
+        get => Model.Chase.StepFade.TotalSeconds;
+        set
+        {
+            var seconds = Math.Max(0, value);
+            SetProperty(Model.Chase.StepFade.TotalSeconds, seconds, Model,
+                (m, v) => m.Chase.StepFade = TimeSpan.FromSeconds(v));
+        }
+    }
 
     // Number of fixtures captured in this cue (shown in the inspector's Contents).
     public int FixtureCount => Model.Fixtures.Count;

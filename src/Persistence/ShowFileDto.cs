@@ -6,7 +6,9 @@ namespace Persistence;
 
 public sealed class ShowFileDto
 {
-    public int Version { get; set; } = 1;
+    // 1: snapshot cues only. 2: adds cue Type / Chase. Version 1 files load unchanged — an
+    // absent type reads as a snapshot cue.
+    public int Version { get; set; } = 2;
     public List<UniverseDto> Universes { get; set; } = [];
     public List<FixtureDto> Fixtures { get; set; } = [];
     public CueListDto CueList { get; set; } = new();
@@ -77,6 +79,20 @@ public sealed class CueDto
     public double FadeSeconds { get; set; }
     public string Notes { get; set; } = string.Empty;
     public double? FollowSeconds { get; set; }          // null = no auto-follow
+    public string? Type { get; set; }                   // null / "snapshot" | "chase"
+    public List<SnapshotDto> Fixtures { get; set; } = [];
+    public ChaseDto? Chase { get; set; }                // present only on chase cues
+}
+
+public sealed class ChaseDto
+{
+    public double StepFadeSeconds { get; set; }
+    public List<ChaseStepDto> Steps { get; set; } = [];
+}
+
+public sealed class ChaseStepDto
+{
+    public double DurationSeconds { get; set; }
     public List<SnapshotDto> Fixtures { get; set; } = [];
 }
 

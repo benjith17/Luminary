@@ -14,7 +14,15 @@ public class Cue
     // Null means the cue holds until the next manual GO.
     public TimeSpan? Follow { get; set; }
 
+    // What this cue holds. Snapshot cues use Fixtures; chase cues use Chase.Steps.
+    public CueType Type { get; set; } = CueType.Snapshot;
+
+    // Snapshot content: the single look this cue fades to. Unused by chase cues.
     public List<CueFixtureSnapshot> Fixtures { get; set; } = [];
+
+    // Chase content. Always present so the editor can bind to it; only meaningful when
+    // Type is Chase.
+    public Chase Chase { get; set; } = new();
 
     public string DisplayNumber => CueMinor == 0 ? $"{CueMajor}" : $"{CueMajor}.{CueMinor}";
 }

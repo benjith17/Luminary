@@ -9,6 +9,7 @@
     <SolidColorBrush x:Key="ActiveCue-Bar" Color="{DynamicResource ThemeSuccess}" />
     <SolidColorBrush x:Key="Live-Accent" Color="#54B57B" />
     <SolidColorBrush x:Key="Next-Accent" Color="#5E93CF" />
+    <SolidColorBrush x:Key="Chase-Accent" Color="#D2A048" />
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -49,12 +50,26 @@
       <Setter Property="Background" Value="#469E69" />
     </Style>
 
-    <!-- Playback progress bar: green for a crossfade, blue for an auto-follow countdown -->
+    <!-- Playback progress bar: green for a crossfade, amber while a chase steps, blue for an
+         auto-follow countdown -->
     <Style Selector="ProgressBar.transport">
       <Setter Property="Foreground" Value="{DynamicResource Live-Accent}" />
     </Style>
+    <Style Selector="ProgressBar.transport.chase">
+      <Setter Property="Foreground" Value="{DynamicResource Chase-Accent}" />
+    </Style>
     <Style Selector="ProgressBar.transport.follow">
       <Setter Property="Foreground" Value="{DynamicResource Next-Accent}" />
+    </Style>
+
+    <!-- "CHASE" row badge -->
+    <Style Selector="Border.chase-badge">
+      <Setter Property="BorderBrush" Value="{DynamicResource Chase-Accent}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="4 0" />
+      <Setter Property="Margin" Value="0 0 6 0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
     <!-- Column-header labels -->
@@ -146,6 +161,7 @@
         <!-- Progress bar: green while a crossfade runs, blue while an auto-follow counts down -->
         <ProgressBar Minimum="0" Maximum="1" Value="{Binding ProgressValue}"
                      Classes="transport" Classes.follow="{Binding IsFollowPending}"
+                     Classes.chase="{Binding IsChaseRunning}"
                      Height="5" MinHeight="0" CornerRadius="3"
                      Background="{DynamicResource ThemeBg3}"
                      VerticalAlignment="Center" Margin="14 0 6 0" />
@@ -170,8 +186,10 @@
           <Button Classes="themed" Content="↓" Command="{Binding MoveDownCommand}" Padding="10 5" FontSize="11" />
           <Button Classes="themed" Content="Delete" Command="{Binding DeleteCommand}" Padding="10 5" FontSize="11" />
           <Button Classes="themed" Content="Record" Command="{Binding RecordCommand}" Padding="10 5" FontSize="11" />
+          <Button Classes="themed" Content="Chase" Command="{Binding RecordChaseCommand}" Padding="10 5" FontSize="11"
+                  ToolTip.Tip="Record a chase cue, seeded with the current stage as its first step" />
           <Button Classes="themed" Content="Update" Command="{Binding UpdateCommand}" Padding="10 5" FontSize="11"
-                  ToolTip.Tip="Re-record the current stage into the selected cue" />
+                  ToolTip.Tip="Re-record the current stage into the selected cue (or into the selected step of a chase)" />
         </StackPanel>
       </DockPanel>
     </Border>
@@ -211,11 +229,16 @@
                            FontSize="11" FontFamily="Monospace"
                            VerticalAlignment="Center" Margin="6 0 0 0" />
                 <Panel Grid.Column="2">
-                  <TextBlock Text="{Binding Label}"
-                             IsVisible="{Binding !IsEditing}"
-                             Foreground="{DynamicResource ThemeText0}"
-                             FontSize="12" VerticalAlignment="Center"
-                             TextTrimming="CharacterEllipsis" />
+                  <DockPanel IsVisible="{Binding !IsEditing}">
+                    <Border DockPanel.Dock="Left" Classes="chase-badge" IsVisible="{Binding IsChase}">
+                      <TextBlock Text="CHASE" Foreground="{DynamicResource Chase-Accent}"
+                                 FontSize="8" FontWeight="Bold" LetterSpacing="1" />
+                    </Border>
+                    <TextBlock Text="{Binding Label}"
+                               Foreground="{DynamicResource ThemeText0}"
+                               FontSize="12" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                  </DockPanel>
                   <TextBox Text="{Binding Label, Mode=TwoWay}"
                            IsVisible="{Binding IsEditing}"
                            FontSize="12" Padding="2 0" MinHeight="0"
@@ -280,8 +303,68 @@
               </StackPanel>
             </Grid>
 
-            <!-- Contents -->
+            <!-- Chase-only: the crossfade applied into every step after the first -->
+            <StackPanel Spacing="5" IsVisible="{Binding SelectedCue.IsChase}">
+              <TextBlock Classes="ilabel" Text="STEP FADE" />
+              <TextBox Text="{Binding SelectedCue.StepFadeSeconds, Mode=TwoWay}"
+                       FontFamily="Monospace" FontSize="14" Padding="7 5"
+                       ToolTip.Tip="Crossfade into each step. 0 snaps. Fade In above covers the entry into step 1." />
+            </StackPanel>
+
+            <!-- Chase steps -->
             <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
+                    IsVisible="{Binding SelectedCue.IsChase}"
+                    BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" Padding="11">
+              <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Grid.Column="0" Classes="ilabel" Text="STEPS" />
+                  <TextBlock Grid.Column="1"
+                             Text="{Binding SelectedCueSteps.Count, StringFormat='{}{0} steps'}"
+                             Foreground="{DynamicResource ThemeText1}" FontFamily="Monospace" FontSize="12" />
+                </Grid>
+
+                <ListBox ItemsSource="{Binding SelectedCueSteps}"
+                         SelectedItem="{Binding SelectedStep}"
+                         Background="Transparent" BorderThickness="0" Padding="0"
+                         MaxHeight="240">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChaseStepViewModel">
+                      <Grid ColumnDefinitions="3,26,Auto,*" Height="26">
+                        <!-- Live-step accent bar, shown while this chase is the one running -->
+                        <Border Grid.Column="0" Width="3" CornerRadius="1.5"
+                                IsVisible="{Binding IsCurrent}"
+                                Background="{DynamicResource Chase-Accent}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Number}"
+                                   Foreground="{DynamicResource ThemeText2}"
+                                   FontSize="11" FontFamily="Monospace"
+                                   VerticalAlignment="Center" Margin="6 0 0 0" />
+                        <TextBox Grid.Column="2" Text="{Binding DurationSeconds, Mode=TwoWay}"
+                                 Width="52" FontSize="11" FontFamily="Monospace"
+                                 Padding="4 1" MinHeight="0" VerticalContentAlignment="Center"
+                                 VerticalAlignment="Center"
+                                 ToolTip.Tip="How long the chase rests on this step, in seconds" />
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding FixtureCount, StringFormat='{}{0} fixtures'}"
+                                   Foreground="{DynamicResource ThemeText2}"
+                                   FontSize="10" VerticalAlignment="Center" Margin="8 0 0 0" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="themed" Content="+ Step" Command="{Binding AddStepCommand}"
+                          Padding="10 4" FontSize="11"
+                          ToolTip.Tip="Append the current stage as a new step" />
+                  <Button Classes="themed" Content="Remove" Command="{Binding DeleteStepCommand}"
+                          Padding="10 4" FontSize="11" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <!-- Contents (snapshot cues) -->
+            <Border Background="{DynamicResource ThemeBg2}" CornerRadius="6"
+                    IsVisible="{Binding !SelectedCue.IsChase}"
                     BorderThickness="1" BorderBrush="{DynamicResource ThemeBorder0}" Padding="11">
               <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">

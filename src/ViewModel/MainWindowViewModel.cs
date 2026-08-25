@@ -98,6 +98,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _artNet?.Dispose();
         MacrosPanel?.StopAll(); // don't let the old show's panel-triggered macros run against the new one
+        CueListPanel?.StopPlayback(); // a chase loops forever — stop it before the show is swapped out
         _show = show;
 
         FixturesListPanel = new FixturesListPanelViewModel(show, _library);

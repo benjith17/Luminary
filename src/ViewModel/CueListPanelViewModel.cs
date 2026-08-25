@@ -13,6 +13,11 @@ public partial class CueListPanelViewModel : ViewModelBase
     private readonly ShowService showService;
     private readonly FixturesListPanelViewModel fixtures;
     private readonly CrossfadeEngine _crossfade = new();
+    private readonly ChaseEngine _chase = new();
+
+    // The cue whose chase is currently looping, so the inspector can highlight the live step only
+    // when that cue's steps are the ones on screen.
+    private CueViewModel? _chaseCue;
 
     // Repeating timer driving the auto-follow countdown; when the clock reaches the follow duration
     // it fires _followTarget. Kept as its own clock so the strip can show a live countdown.
@@ -30,6 +35,7 @@ public partial class CueListPanelViewModel : ViewModelBase
             showService.CueList.Cues.Select(c => new CueViewModel(c)));
 
         _crossfade.ProgressChanged += OnCrossfadeProgress;
+        _chase.ProgressChanged += OnChaseProgress;
         _followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(25) }; // ~40fps
         _followTimer.Tick += OnFollowTick;
     }
@@ -52,6 +58,14 @@ public partial class CueListPanelViewModel : ViewModelBase
     // Fixtures captured in the selected cue, for the inspector's Contents list ("<number> · <name>").
     public ObservableCollection<string> SelectedCueContents { get; } = [];
 
+    // Steps of the selected cue's chase, for the inspector's step editor. Empty for snapshot cues.
+    public ObservableCollection<ChaseStepViewModel> SelectedCueSteps { get; } = [];
+
+    // Step selected in that list — the target of Update, Add Step and Delete Step.
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteStepCommand))]
+    public partial ChaseStepViewModel? SelectedStep { get; set; }
+
     // The playback strip reuses one bar for two phases: the crossfade while it runs, then the
     // auto-follow countdown while one is pending. FadeProgress mirrors the engine; FollowProgress
     // is driven by _followClock; IsFollowPending recolours the bar and gives the follow priority.
@@ -64,21 +78,33 @@ public partial class CueListPanelViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsFollowPending { get; set; }
 
-    // What the bar shows: a pending auto-follow countdown takes precedence over the fade.
-    public double ProgressValue => IsFollowPending ? FollowProgress : FadeProgress;
+    // Progress through the running chase's current step, and whether one is running at all.
+    [ObservableProperty]
+    public partial double ChaseProgress { get; set; }
 
-    // "follow e / t s" while counting down to an auto-follow, "e / t s" while fading, else the
-    // selected cue's fade time.
+    [ObservableProperty]
+    public partial bool IsChaseRunning { get; set; }
+
+    // What the bar shows: a pending auto-follow countdown wins, then a running chase, then the fade.
+    public double ProgressValue =>
+        IsFollowPending ? FollowProgress : IsChaseRunning ? ChaseProgress : FadeProgress;
+
+    // "follow e / t s" while counting down to an auto-follow, "step n / total" while a chase runs,
+    // "e / t s" while fading, else the selected cue's fade time.
     public string ProgressReadout =>
         IsFollowPending
             ? $"follow {_followClock.Elapsed.TotalSeconds:0.0} / {_followDuration.TotalSeconds:0.0}s"
-            : _crossfade.IsFading
-                ? $"{_crossfade.Elapsed.TotalSeconds:0.0} / {_crossfade.Duration.TotalSeconds:0.0}s"
-                : SelectedCue?.FadeDisplay ?? "—";
+            : _chase.IsRunning
+                ? $"step {_chase.StepIndex + 1} / {_chase.StepCount}"
+                : _crossfade.IsFading
+                    ? $"{_crossfade.Elapsed.TotalSeconds:0.0} / {_crossfade.Duration.TotalSeconds:0.0}s"
+                    : SelectedCue?.FadeDisplay ?? "—";
 
     partial void OnFadeProgressChanged(double value) => NotifyProgress();
     partial void OnFollowProgressChanged(double value) => NotifyProgress();
     partial void OnIsFollowPendingChanged(bool value) => NotifyProgress();
+    partial void OnChaseProgressChanged(double value) => NotifyProgress();
+    partial void OnIsChaseRunningChanged(bool value) => NotifyProgress();
 
     private void NotifyProgress()
     {
@@ -88,10 +114,26 @@ public partial class CueListPanelViewModel : ViewModelBase
 
     private void OnCrossfadeProgress() => FadeProgress = _crossfade.Progress;
 
+    private void OnChaseProgress()
+    {
+        ChaseProgress = _chase.StepProgress;
+        IsChaseRunning = _chase.IsRunning;
+        RefreshCurrentStep();
+    }
+
     partial void OnSelectedCueChanged(CueViewModel? value)
     {
         RefreshSelectedContents();
         OnPropertyChanged(nameof(ProgressReadout));
+    }
+
+    // Stops every playback timer this panel owns. Called when the show is swapped, so a chase
+    // (which otherwise loops forever) can't keep driving the old show's fixtures.
+    public void StopPlayback()
+    {
+        _chase.Stop();
+        _crossfade.Stop();
+        CancelFollow();
     }
 
     [RelayCommand]
@@ -150,37 +192,106 @@ public partial class CueListPanelViewModel : ViewModelBase
     private void Record()
     {
         var (major, minor) = NextCueNumber();
-        var cue = new Cue { CueMajor = major, CueMinor = minor };
-        CaptureInto(cue);
+        var cue = new Cue { CueMajor = major, CueMinor = minor, Fixtures = CaptureStage() };
         InsertSorted(cue);
         SyncActiveIndex();
     }
 
-    // Re-record the current stage into the selected cue, keeping its number, label, fade and notes.
+    // Record a new chase cue seeded with the current stage as its first step. Further steps are
+    // added from the inspector, so the workflow is: build a look, Chase, build the next look, + Step.
+    [RelayCommand]
+    private void RecordChase()
+    {
+        var (major, minor) = NextCueNumber();
+        var cue = new Cue
+        {
+            CueMajor = major,
+            CueMinor = minor,
+            Type = CueType.Chase,
+            Chase = new Chase { Steps = [new ChaseStep { Fixtures = CaptureStage() }] }
+        };
+        InsertSorted(cue);
+        SyncActiveIndex();
+    }
+
+    // Re-record the current stage into the selection, keeping numbers, labels, fades and notes.
+    // On a chase cue this replaces the selected step rather than the whole cue.
     [RelayCommand(CanExecute = nameof(HasSelection))]
     private void Update()
     {
         if (SelectedCue is null) return;
-        CaptureInto(SelectedCue.Model);
+
+        if (SelectedCue.IsChase)
+        {
+            if (SelectedStep is null) return;
+            SelectedStep.Model.Fixtures = CaptureStage();
+            SelectedStep.NotifyContentsChanged();
+            RestartIfLive(SelectedCue);
+            return;
+        }
+
+        SelectedCue.Model.Fixtures = CaptureStage();
         SelectedCue.NotifyContentsChanged();
         RefreshSelectedContents();
     }
 
     private bool HasSelection() => SelectedCue is not null;
 
-    // Captures every fixture's current output into the cue, replacing any prior snapshots.
-    private void CaptureInto(Cue cue)
+    // Append a step to the selected chase, captured from the current stage, and select it.
+    [RelayCommand]
+    private void AddStep()
     {
-        cue.Fixtures.Clear();
-        foreach (var fixture in fixtures.Fixtures)
-        {
-            cue.Fixtures.Add(new CueFixtureSnapshot
-            {
-                FixtureId = fixture.Fixture.Id,
-                CapabilityValues = fixture.Capabilities.Select(c => c.Capture()).ToList()
-            });
-        }
+        if (SelectedCue is not { IsChase: true } cue) return;
+
+        var step = new ChaseStep { Fixtures = CaptureStage() };
+        cue.Model.Chase.Steps.Add(step);
+        SelectedCueSteps.Add(new ChaseStepViewModel(step, SelectedCueSteps.Count));
+        SelectedStep = SelectedCueSteps[^1];
+        RestartIfLive(cue);
     }
+
+    [RelayCommand(CanExecute = nameof(HasStepSelection))]
+    private void DeleteStep()
+    {
+        if (SelectedCue is not { IsChase: true } cue || SelectedStep is null) return;
+
+        var index = SelectedCueSteps.IndexOf(SelectedStep);
+        cue.Model.Chase.Steps.RemoveAt(index);
+        SelectedCueSteps.RemoveAt(index);
+        Renumber();
+
+        // Keep a neighbour selected (the one that shifted into this slot, else the new last).
+        SelectedStep = SelectedCueSteps.Count == 0
+            ? null
+            : SelectedCueSteps[Math.Min(index, SelectedCueSteps.Count - 1)];
+
+        RestartIfLive(cue);
+    }
+
+    private bool HasStepSelection() => SelectedStep is not null;
+
+    // The engine works from its own resolved copy of the steps, so an edit to a chase that is
+    // currently looping is invisible until it is re-fired — and a chase loops forever, so that
+    // would mean never. Restarting on each deliberate edit (add / remove / re-record) keeps what
+    // you see matching what you just did. Step duration, typed character by character, is left to
+    // be picked up by the next restart.
+    private void RestartIfLive(CueViewModel cue)
+    {
+        if (ReferenceEquals(_chaseCue, cue)) StartChase(cue);
+    }
+
+    private void Renumber()
+    {
+        for (var i = 0; i < SelectedCueSteps.Count; i++) SelectedCueSteps[i].Number = i + 1;
+    }
+
+    // Captures every fixture's current output as a fresh snapshot list.
+    private List<CueFixtureSnapshot> CaptureStage() =>
+        fixtures.Fixtures.Select(fixture => new CueFixtureSnapshot
+        {
+            FixtureId = fixture.Fixture.Id,
+            CapabilityValues = fixture.Capabilities.Select(c => c.Capture()).ToList()
+        }).ToList();
 
     [RelayCommand]
     private void Delete()
@@ -189,6 +300,13 @@ public partial class CueListPanelViewModel : ViewModelBase
 
         var index = Cues.IndexOf(SelectedCue);
         if (SelectedCue == ActiveCue) ActiveCue = null;
+
+        // Deleting the cue a chase is looping would leave it running with no cue behind it.
+        if (ReferenceEquals(_chaseCue, SelectedCue))
+        {
+            _chase.Stop();
+            _chaseCue = null;
+        }
 
         showService.CueList.Cues.RemoveAt(index);
         Cues.RemoveAt(index);
@@ -252,9 +370,41 @@ public partial class CueListPanelViewModel : ViewModelBase
 
     private void Recall(CueViewModel cueVm)
     {
+        // Any GO ends a running chase. It stops where it stands rather than releasing, so the
+        // incoming cue crossfades out of the frozen look instead of snapping — both engines take
+        // their start point from the live output.
+        _chase.Stop();
+        _chaseCue = null;
+
+        if (cueVm.IsChase)
+        {
+            // A chase supplies its own per-step fades, so cancel any crossfade still in flight
+            // rather than letting the two engines drive the same parameters.
+            _crossfade.Stop();
+            StartChase(cueVm);
+        }
+        else
+        {
+            // Crossfade from the current live state to the cue over its fade time (0 = hard cut).
+            _crossfade.Start(ResolveTargets(cueVm.Model.Fixtures), cueVm.Model.FadeIn);
+        }
+
+        foreach (var vm in Cues) vm.IsActive = false;
+        cueVm.IsActive = true;
+        ActiveCue = cueVm;
+        SyncActiveIndex();
+
+        ArmFollow(cueVm);
+    }
+
+    // Resolves a stored snapshot list to the live capability VMs it drives, skipping fixtures that
+    // are no longer in the show.
+    private List<(CapabilityViewModelBase Capability, byte[] Target)> ResolveTargets(
+        IEnumerable<CueFixtureSnapshot> snapshots)
+    {
         var targets = new List<(CapabilityViewModelBase Capability, byte[] Target)>();
 
-        foreach (var snapshot in cueVm.Model.Fixtures)
+        foreach (var snapshot in snapshots)
         {
             var fixtureVm = fixtures.Fixtures.FirstOrDefault(f => f.Fixture.Id == snapshot.FixtureId);
             if (fixtureVm is null) continue;
@@ -263,15 +413,22 @@ public partial class CueListPanelViewModel : ViewModelBase
                 targets.Add((capability, values));
         }
 
-        // Crossfade from the current live state to the cue over its fade time (0 = hard cut).
-        _crossfade.Start(targets, cueVm.Model.FadeIn);
+        return targets;
+    }
 
-        foreach (var vm in Cues) vm.IsActive = false;
-        cueVm.IsActive = true;
-        ActiveCue = cueVm;
-        SyncActiveIndex();
+    // Resolves and launches a chase cue's steps. Steps that resolve to nothing (every fixture gone)
+    // are dropped so they can't stall the loop on a step that drives no output.
+    private void StartChase(CueViewModel cueVm)
+    {
+        var steps = cueVm.Model.Chase.Steps
+            .Select(step => new ChaseStepTargets(ResolveTargets(step.Fixtures), step.Duration))
+            .Where(step => step.Targets.Count > 0)
+            .ToList();
 
-        ArmFollow(cueVm);
+        if (steps.Count == 0) return; // an empty chase simply holds the previous look
+
+        _chaseCue = cueVm;
+        _chase.Start(steps, cueVm.Model.FadeIn, cueVm.Model.Chase.StepFade);
     }
 
     // ---- Auto-follow --------------------------------------------------------------------------
@@ -321,18 +478,41 @@ public partial class CueListPanelViewModel : ViewModelBase
         if (Cues.Contains(target)) FireAndAdvance(target);
     }
 
-    // Rebuilds the inspector's Contents list for the selected cue, resolving each snapshot to its
-    // fixture number and name.
+    // Rebuilds the inspector for the selected cue: the Contents list for a snapshot cue, the step
+    // list for a chase. Each snapshot resolves to its fixture number and name.
     private void RefreshSelectedContents()
     {
         SelectedCueContents.Clear();
+        SelectedCueSteps.Clear();
+        SelectedStep = null;
+
         if (SelectedCue is null) return;
+
+        if (SelectedCue.IsChase)
+        {
+            foreach (var step in SelectedCue.Model.Chase.Steps)
+                SelectedCueSteps.Add(new ChaseStepViewModel(step, SelectedCueSteps.Count));
+
+            SelectedStep = SelectedCueSteps.FirstOrDefault();
+            RefreshCurrentStep();
+            return;
+        }
 
         foreach (var snapshot in SelectedCue.Model.Fixtures)
         {
             var fixture = fixtures.Fixtures.FirstOrDefault(f => f.Fixture.Id == snapshot.FixtureId);
             SelectedCueContents.Add(fixture is null ? "· missing fixture" : $"{fixture.Number} · {fixture.Name}");
         }
+    }
+
+    // Marks the step the chase is currently on, but only while the cue being inspected is the one
+    // actually running — otherwise the highlight would point at an unrelated cue's step list.
+    private void RefreshCurrentStep()
+    {
+        var live = _chase.IsRunning && ReferenceEquals(_chaseCue, SelectedCue) ? _chase.StepIndex : -1;
+
+        for (var i = 0; i < SelectedCueSteps.Count; i++)
+            SelectedCueSteps[i].IsCurrent = i == live;
     }
 
     // Keeps the persisted ActiveIndex in step with the active cue after any structural change.
