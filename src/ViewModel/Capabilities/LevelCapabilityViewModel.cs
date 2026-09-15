@@ -15,7 +15,7 @@ public class LevelCapabilityViewModel : CapabilityViewModelBase
         : base(capability)
     {
         Level = new CapabilityParameter(
-            max: 255, width: 1, MergeMode.Ltp, FadeBehavior.Fade,
+            max: 255, width: 1, MergeMode.Ltp, capability.Fade,
             v => showService.GetUniverse(fixture.UniverseNumber)
                 ?.Set(fixture.Channel + capability.Offset, (byte)v))
         {
@@ -37,7 +37,7 @@ public class LevelFineCapabilityViewModel : CapabilityViewModelBase
         : base(capability)
     {
         Level = new CapabilityParameter(
-            max: 65535, width: 2, MergeMode.Ltp, FadeBehavior.Fade,
+            max: 65535, width: 2, MergeMode.Ltp, capability.Fade,
             v =>
             {
                 var universe = showService.GetUniverse(fixture.UniverseNumber);

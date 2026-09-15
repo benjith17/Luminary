@@ -12,21 +12,21 @@ public class ColorCapabilityViewModel : CapabilityViewModelBase
     public ColorCapabilityViewModel(ColorCapability capability, Fixture fixture, ShowService showService)
         : base(capability)
     {
-        Red = new CapabilityParameter(255, 1, MergeMode.Htp, FadeBehavior.Fade,
+        Red = new CapabilityParameter(255, 1, MergeMode.Htp, capability.Fade,
             v => showService.GetUniverse(fixture.UniverseNumber)
                 ?.Set(fixture.Channel + capability.Offset, (byte)v))
         {
             Manual = capability.Default
         };
 
-        Green = new CapabilityParameter(255, 1, MergeMode.Htp, FadeBehavior.Fade,
+        Green = new CapabilityParameter(255, 1, MergeMode.Htp, capability.Fade,
             v => showService.GetUniverse(fixture.UniverseNumber)
                 ?.Set(fixture.Channel + capability.GreenOffset, (byte)v))
         {
             Manual = capability.DefaultGreen
         };
 
-        Blue = new CapabilityParameter(255, 1, MergeMode.Htp, FadeBehavior.Fade,
+        Blue = new CapabilityParameter(255, 1, MergeMode.Htp, capability.Fade,
             v => showService.GetUniverse(fixture.UniverseNumber)
                 ?.Set(fixture.Channel + capability.BlueOffset, (byte)v))
         {

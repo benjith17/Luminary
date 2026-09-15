@@ -18,8 +18,8 @@
       <panTiltFine name="Pan/Tilt" pan="29" panFine="30" tilt="31" tiltFine="32" defaultPan="32768" defaultTilt="32768" />
     </focus>
     <beam>
-      <level name="Strobe" channel="1" />
-      <level name="Effect" channel="34" />
+      <level name="Strobe" channel="1" fade="snap" />
+      <level name="Effect" channel="34" fade="snap" />
     </beam>
   </mode>
 

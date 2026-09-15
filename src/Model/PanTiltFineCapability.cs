@@ -14,6 +14,9 @@ public class PanTiltFineCapability(
 
     public override IEnumerable<int> Channels => [Offset, PanFineOffset, TiltOffset, TiltFineOffset];
 
+    // Positions must not sweep the rig across the stage when a cue is recalled.
+    public override FadeBehavior DefaultFade => FadeBehavior.Snap;
+
     public override string MacroName => "Position";
     public override IReadOnlyList<string> MacroParameters { get; } = ["Pan", "Tilt"];
 }

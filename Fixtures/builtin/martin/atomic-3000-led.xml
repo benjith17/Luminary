@@ -23,7 +23,7 @@
     <beam>
       <level name="Strobe Duration" channel="2" default="0" />
       <level name="Strobe Rate" channel="3" default="0" />
-      <level name="Effect" channel="4" default="0" />
+      <level name="Effect" channel="4" default="0" fade="snap" />
     </beam>
   </mode>
 
@@ -34,17 +34,17 @@
     </intensity>
     <color>
       <rgb name="Color" red="11" green="12" blue="13" defaultRed="255" defaultGreen="255" defaultBlue="255" />
-      <level name="Color Wheel" channel="14" default="0" />
+      <level name="Color Wheel" channel="14" default="0" fade="snap" />
     </color>
     <beam>
       <level name="Strobe Duration" channel="2" default="0" />
       <level name="Strobe Rate" channel="3" default="0" />
-      <level name="Strobe" channel="4" default="0" />
-      <level name="Control" channel="5" default="0" />
-      <level name="Effect" channel="6" default="0" />
+      <level name="Strobe" channel="4" default="0" fade="snap" />
+      <level name="Control" channel="5" default="0" fade="snap" />
+      <level name="Effect" channel="6" default="0" fade="snap" />
       <level name="Effect Adjust" channel="7" default="0" />
-      <level name="Effect Rotate" channel="8" default="0" />
-      <level name="Shutter" channel="9" default="30" />
+      <level name="Effect Rotate" channel="8" default="0" fade="snap" />
+      <level name="Shutter" channel="9" default="30" fade="snap" />
     </beam>
   </mode>
 

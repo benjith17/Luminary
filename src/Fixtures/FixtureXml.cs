@@ -159,6 +159,7 @@ public static class FixtureXml
         var capability = registration.Factory(reader);
         capability.Family = family;
         capability.Primary = reader.Bool("primary");
+        if (reader.Fade() is { } fade) capability.Fade = fade;
         return capability;
     }
 

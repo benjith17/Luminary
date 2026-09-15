@@ -4,6 +4,16 @@
            targetNamespace="urn:luminary:fixture:1"
            elementFormDefault="qualified">
 
+  <!-- Crossfade behaviour. Omit to take the capability type's default: pan/tilt snaps so the rig
+       does not sweep on cue recall, everything else fades. Set snap on indexed values - a colour
+       or gobo wheel, a shutter - so a crossfade does not run through every intervening slot. -->
+  <xs:simpleType name="fadeBehavior">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="fade" />
+      <xs:enumeration value="snap" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="idSegment">
     <xs:restriction base="xs:string"><xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*" /></xs:restriction>
   </xs:simpleType>
@@ -13,6 +23,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
       <xs:attribute name="default" type="xs:unsignedByte" default="0" />
     </xs:complexType>
@@ -21,6 +32,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
       <xs:attribute name="fine" type="xs:positiveInteger" use="required" />
       <xs:attribute name="default" type="xs:unsignedShort" default="0" />
@@ -32,6 +44,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
       <xs:attribute name="default" type="xs:unsignedByte" default="0" />
     </xs:complexType>
@@ -40,6 +53,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
       <xs:attribute name="fine" type="xs:positiveInteger" use="required" />
       <xs:attribute name="default" type="xs:unsignedShort" default="0" />
@@ -51,6 +65,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="red" type="xs:positiveInteger" use="required" />
       <xs:attribute name="green" type="xs:positiveInteger" use="required" />
       <xs:attribute name="blue" type="xs:positiveInteger" use="required" />
@@ -65,6 +80,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="pan" type="xs:positiveInteger" use="required" />
       <xs:attribute name="tilt" type="xs:positiveInteger" use="required" />
       <xs:attribute name="defaultPan" type="xs:unsignedByte" default="0" />
@@ -75,6 +91,7 @@
     <xs:complexType>
       <xs:attribute name="name" type="xs:string" use="required" />
       <xs:attribute name="primary" type="xs:boolean" default="false" />
+      <xs:attribute name="fade" type="fadeBehavior" />
       <xs:attribute name="pan" type="xs:positiveInteger" use="required" />
       <xs:attribute name="panFine" type="xs:positiveInteger" use="required" />
       <xs:attribute name="tilt" type="xs:positiveInteger" use="required" />

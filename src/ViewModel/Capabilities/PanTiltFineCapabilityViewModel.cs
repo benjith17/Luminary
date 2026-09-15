@@ -11,7 +11,7 @@ public class PanTiltFineCapabilityViewModel : CapabilityViewModelBase
     public PanTiltFineCapabilityViewModel(PanTiltFineCapability capability, Fixture fixture, ShowService showService)
         : base(capability)
     {
-        Pan = new CapabilityParameter(65535, 2, MergeMode.Ltp, FadeBehavior.Snap,
+        Pan = new CapabilityParameter(65535, 2, MergeMode.Ltp, capability.Fade,
             v =>
             {
                 var universe = showService.GetUniverse(fixture.UniverseNumber);
@@ -22,7 +22,7 @@ public class PanTiltFineCapabilityViewModel : CapabilityViewModelBase
             Manual = capability.DefaultPan
         };
 
-        Tilt = new CapabilityParameter(65535, 2, MergeMode.Ltp, FadeBehavior.Snap,
+        Tilt = new CapabilityParameter(65535, 2, MergeMode.Ltp, capability.Fade,
             v =>
             {
                 var universe = showService.GetUniverse(fixture.UniverseNumber);

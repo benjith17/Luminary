@@ -15,6 +15,19 @@ public abstract class FixtureCapability(string name, int offset, byte defaultVal
     // than one candidate. The first primary wins; absent any, the first in the family is used.
     public bool Primary { get; set; }
 
+    // What happens to this property during a crossfade. The capability type supplies the default —
+    // pan/tilt snaps, everything else fades — and a fixture file may override it per capability
+    // with fade="snap", which is how an indexed wheel avoids sweeping through its slots.
+    private FadeBehavior? _fade;
+    public FadeBehavior Fade
+    {
+        get => _fade ?? DefaultFade;
+        set => _fade = value;
+    }
+
+    /// <summary>The fade behaviour for this capability type, used when the file does not say.</summary>
+    public virtual FadeBehavior DefaultFade => FadeBehavior.Fade;
+
     // Every DMX channel this capability occupies, as 0-based offsets. Used to check a personality
     // fits its declared footprint and that no two capabilities fight over a channel. Multi-channel
     // capabilities must override; the default covers the single-channel case.

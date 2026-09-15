@@ -14,16 +14,16 @@
       <rgb name="Color" red="7" green="8" blue="9" />
       <level name="White" channel="10" />
       <level name="CTO" channel="11" />
-      <level name="Color Wheel" channel="12" />
+      <level name="Color Wheel" channel="12" fade="snap" />
     </color>
     <focus>
       <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
       <level name="PositionMSpeed" channel="5" />
     </focus>
     <beam>
-      <level name="Control 1" channel="6" />
+      <level name="Control 1" channel="6" fade="snap" />
       <level name="Zoom" channel="13" />
-      <level name="Shutter" channel="14" />
+      <level name="Shutter" channel="14" fade="snap" />
     </beam>
   </mode>
 

@@ -5,13 +5,6 @@ using Model;
 
 namespace ViewModel;
 
-// How a single property behaves during a crossfade.
-public enum FadeBehavior
-{
-    Fade, // interpolate smoothly from the current value to the cue value
-    Snap  // jump straight to the cue value the moment the cue is fired
-}
-
 public abstract class CapabilityViewModelBase(FixtureCapability capability) : ViewModelBase
 {
     public string Name { get; } = capability.Name;

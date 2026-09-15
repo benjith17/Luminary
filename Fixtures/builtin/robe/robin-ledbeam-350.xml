@@ -11,20 +11,20 @@
       <dimmerFine name="Dimmer" channel="21" fine="22" default="0" />
     </intensity>
     <color>
-      <level name="Color Wheel" channel="7" default="0" />
+      <level name="Color Wheel" channel="7" default="0" fade="snap" />
       <rgb name="Color" red="8" green="10" blue="12" defaultRed="255" defaultGreen="255" defaultBlue="255" />
       <levelFine name="White" channel="14" fine="15" default="65535" />
       <level name="CTO" channel="16" default="0" />
-      <level name="Color Mix Mode" channel="17" default="45" />
+      <level name="Color Mix Mode" channel="17" default="45" fade="snap" />
     </color>
     <focus>
       <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
       <level name="Position MSpeed" channel="5" default="0" />
     </focus>
     <beam>
-      <level name="Control" channel="6" default="0" />
+      <level name="Control" channel="6" default="0" fade="snap" />
       <levelFine name="Zoom" channel="18" fine="19" default="32768" />
-      <level name="Shutter" channel="20" default="32" />
+      <level name="Shutter" channel="20" default="32" fade="snap" />
     </beam>
   </mode>
 
@@ -33,20 +33,20 @@
       <dimmer name="Dimmer" channel="16" default="0" />
     </intensity>
     <color>
-      <level name="Color Wheel" channel="7" default="0" />
+      <level name="Color Wheel" channel="7" default="0" fade="snap" />
       <rgb name="Color" red="8" green="9" blue="10" defaultRed="255" defaultGreen="255" defaultBlue="255" />
       <level name="White" channel="11" default="255" />
       <level name="CTO" channel="12" default="0" />
-      <level name="Color Mix Mode" channel="13" default="45" />
+      <level name="Color Mix Mode" channel="13" default="45" fade="snap" />
     </color>
     <focus>
       <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
       <level name="Position MSpeed" channel="5" default="0" />
     </focus>
     <beam>
-      <level name="Control" channel="6" default="0" />
+      <level name="Control" channel="6" default="0" fade="snap" />
       <level name="Zoom" channel="14" default="128" />
-      <level name="Shutter" channel="15" default="32" />
+      <level name="Shutter" channel="15" default="32" fade="snap" />
     </beam>
   </mode>
 
@@ -55,22 +55,22 @@
       <dimmerFine name="Dimmer" channel="23" fine="24" default="0" />
     </intensity>
     <color>
-      <level name="Color Wheel" channel="9" default="0" />
+      <level name="Color Wheel" channel="9" default="0" fade="snap" />
       <rgb name="Color" red="10" green="12" blue="14" defaultRed="255" defaultGreen="255" defaultBlue="255" />
       <levelFine name="White" channel="16" fine="17" default="65535" />
       <level name="CTO" channel="18" default="0" />
-      <level name="Color Mix Mode" channel="19" default="45" />
+      <level name="Color Mix Mode" channel="19" default="45" fade="snap" />
     </color>
     <focus>
       <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
       <level name="Position MSpeed" channel="5" default="0" />
     </focus>
     <beam>
-      <level name="Control" channel="6" default="0" />
-      <level name="LED Frequency" channel="7" default="10" />
+      <level name="Control" channel="6" default="0" fade="snap" />
+      <level name="LED Frequency" channel="7" default="10" fade="snap" />
       <level name="LED Frequency Adjust" channel="8" default="128" />
       <levelFine name="Zoom" channel="20" fine="21" default="32768" />
-      <level name="Shutter" channel="22" default="32" />
+      <level name="Shutter" channel="22" default="32" fade="snap" />
     </beam>
   </mode>
 

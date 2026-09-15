@@ -1,5 +1,6 @@
 using System.Xml;
 using System.Xml.Linq;
+using Model;
 
 namespace Fixtures;
 
@@ -45,6 +46,17 @@ public readonly struct CapabilityReader(XElement element, string source)
         if (!bool.TryParse(raw, out var value))
             throw Error($"'{attribute}' must be true or false, but was '{raw}'");
         return value;
+    }
+
+    public FadeBehavior? Fade()
+    {
+        if (element.Attribute("fade")?.Value is not { } raw) return null;
+        return raw.ToLowerInvariant() switch
+        {
+            "fade" => FadeBehavior.Fade,
+            "snap" => FadeBehavior.Snap,
+            _ => throw Error($"'fade' must be fade or snap, but was '{raw}'")
+        };
     }
 
     private string Required(string attribute) =>

@@ -11,7 +11,7 @@ public class DimmerFineCapabilityViewModel : CapabilityViewModelBase
         : base(capability)
     {
         Intensity = new CapabilityParameter(
-            max: 65535, width: 2, MergeMode.Htp, FadeBehavior.Fade,
+            max: 65535, width: 2, MergeMode.Htp, capability.Fade,
             v =>
             {
                 var universe = showService.GetUniverse(fixture.UniverseNumber);
