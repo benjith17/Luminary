@@ -7,24 +7,40 @@
   <created>2026-08-27</created>
 
   <mode id="5ch-default" name="5ch(Default)" channelCount="5">
-    <dimmer name="Dimmer" channel="1" default="0" />
-    <color name="Color" red="2" green="3" blue="4" defaultRed="255" defaultGreen="255" defaultBlue="255" />
-    <dimmer name="Strobe Rate" channel="5" default="0" />
+    <intensity>
+      <dimmer name="Dimmer" channel="1" default="0" />
+    </intensity>
+    <color>
+      <rgb name="Color" red="2" green="3" blue="4" defaultRed="255" defaultGreen="255" defaultBlue="255" />
+    </color>
+    <beam>
+      <level name="Strobe Rate" channel="5" default="0" />
+    </beam>
   </mode>
 
   <mode id="6ch-direct" name="6ch (Direct)" channelCount="6">
-    <dimmer name="Dimmer" channel="1" default="0" />
-    <color name="Color" red="2" green="3" blue="4" defaultRed="255" defaultGreen="255" defaultBlue="255" />
-    <dimmer name="Lime" channel="5" default="255" />
-    <dimmer name="Strobe Rate" channel="6" default="128" />
+    <intensity>
+      <dimmer name="Dimmer" channel="1" default="0" />
+    </intensity>
+    <color>
+      <rgb name="Color" red="2" green="3" blue="4" defaultRed="255" defaultGreen="255" defaultBlue="255" />
+      <level name="Lime" channel="5" default="255" />
+    </color>
+    <beam>
+      <level name="Strobe Rate" channel="6" default="128" />
+    </beam>
   </mode>
 
   <mode id="3ch-rgb" name="3ch(RGB)" channelCount="3">
-    <color name="Color" red="1" green="2" blue="3" defaultRed="0" defaultGreen="0" defaultBlue="0" />
+    <color>
+      <rgb name="Color" red="1" green="2" blue="3" defaultRed="0" defaultGreen="0" defaultBlue="0" />
+    </color>
   </mode>
 
   <mode id="1ch" name="1ch" channelCount="1">
-    <dimmer name="Dimmer" channel="1" default="0" />
+    <intensity>
+      <dimmer name="Dimmer" channel="1" default="0" />
+    </intensity>
   </mode>
 
 </fixture>

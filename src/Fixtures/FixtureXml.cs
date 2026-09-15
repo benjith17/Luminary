@@ -9,6 +9,15 @@ public static class FixtureXml
 {
     public static readonly XNamespace Ns = CapabilityRegistry.CoreNamespace;
 
+    // Capabilities are grouped in the file by attribute family, in this order.
+    private static readonly (string Element, CapabilityFamily Family)[] Families =
+    [
+        ("intensity", CapabilityFamily.Intensity),
+        ("color",     CapabilityFamily.Color),
+        ("focus",     CapabilityFamily.Focus),
+        ("beam",      CapabilityFamily.Beam)
+    ];
+
     /// <summary>
     /// Reads a fixture file. <paramref name="packId"/> and <paramref name="fixturePath"/> supply the
     /// identity the document deliberately does not carry: a fixture is identified by where it sits,
@@ -52,13 +61,28 @@ public static class FixtureXml
                     $"duplicate mode id '{modeId}' — mode ids must be unique within a fixture");
 
             var channelCount = ChannelCount(mode, source);
-            var capabilities = mode.Elements()
-                .Select(e => BuildCapability(e, source))
-                .ToList();
+            var warnings = new List<string>();
+            var capabilities = ReadCapabilities(mode, source, warnings);
 
             if (capabilities.Count == 0)
                 throw new FixtureFormatException(source, CapabilityReader.Line(mode),
                     $"mode '{modeId}' declares no capabilities");
+
+            // A capability past the declared footprint would write into whatever is patched next,
+            // so this is an error rather than something to flag and carry on with.
+            foreach (var capability in capabilities)
+                foreach (var channel in capability.Channels)
+                    if (channel >= channelCount)
+                        throw new FixtureFormatException(source, CapabilityReader.Line(mode),
+                            $"'{capability.Name}' uses channel {channel + 1}, beyond the {channelCount} " +
+                            $"channels mode '{modeId}' declares");
+
+            Check(capabilities, warnings);
+
+            // Ordered by first channel, never by position in the file. Cues and keyframe tracks
+            // address capabilities by index, so grouping a fixture into families must not reshuffle
+            // them and silently repoint existing show data.
+            capabilities.Sort((a, b) => a.Offset.CompareTo(b.Offset));
 
             definitions.Add(new FixtureDefinition
             {
@@ -72,16 +96,50 @@ public static class FixtureXml
                 Author = string.IsNullOrWhiteSpace(author) ? null : author,
                 Created = created,
                 ChannelCount = channelCount,
-                Capabilities = capabilities
+                Capabilities = capabilities,
+                Warnings = warnings
             });
         }
 
         return definitions;
     }
 
-    private static FixtureCapability BuildCapability(XElement element, string source)
+    // Reads the family wrappers and everything inside them.
+    private static List<FixtureCapability> ReadCapabilities(XElement mode, string source, List<string> warnings)
     {
-        if (!CapabilityRegistry.TryGet(element.Name, out var factory))
+        var capabilities = new List<FixtureCapability>();
+
+        foreach (var child in mode.Elements())
+        {
+            var family = Families.FirstOrDefault(f => child.Name == Ns + f.Element);
+            if (family.Element is null)
+                throw new FixtureFormatException(source, CapabilityReader.Line(child),
+                    $"<{child.Name.LocalName}> is not an attribute family — expected one of " +
+                    string.Join(", ", Families.Select(f => $"<{f.Element}>")));
+
+            var primaries = 0;
+            foreach (var element in child.Elements())
+            {
+                var capability = BuildCapability(element, family.Family, source);
+
+                if (capability.Primary && ++primaries > 1)
+                {
+                    // First primary wins; say so rather than silently picking one.
+                    capability.Primary = false;
+                    warnings.Add($"More than one capability in {family.Element} is marked primary; " +
+                                 $"'{capability.Name}' is ignored.");
+                }
+
+                capabilities.Add(capability);
+            }
+        }
+
+        return capabilities;
+    }
+
+    private static FixtureCapability BuildCapability(XElement element, CapabilityFamily family, string source)
+    {
+        if (!CapabilityRegistry.TryGet(element.Name, out var registration))
         {
             // An unrecognised capability leaves the personality with an incomplete channel map, so
             // it is an error rather than something to skip — a fixture missing a channel is worse
@@ -93,7 +151,33 @@ public static class FixtureXml
                 $"<{element.Name.LocalName}> {hint}");
         }
 
-        return factory(new CapabilityReader(element, source));
+        if (!registration.AllowedIn(family))
+            throw new FixtureFormatException(source, CapabilityReader.Line(element),
+                $"<{element.Name.LocalName}> cannot appear in <{family.ToString().ToLowerInvariant()}>");
+
+        var reader = new CapabilityReader(element, source);
+        var capability = registration.Factory(reader);
+        capability.Family = family;
+        capability.Primary = reader.Bool("primary");
+        return capability;
+    }
+
+    // Things that do not stop a personality working but the operator should see before patching it.
+    private static void Check(List<FixtureCapability> capabilities, List<string> warnings)
+    {
+        if (!capabilities.Any(c => c.Family == CapabilityFamily.Intensity))
+            warnings.Add("No intensity capability: '@' with a single value will not resolve.");
+
+        foreach (var group in capabilities.GroupBy(c => c.Name).Where(g => g.Count() > 1))
+            warnings.Add($"{group.Count()} capabilities are named '{group.Key}', so 'set {group.Key}' " +
+                         "depends on their order.");
+
+        var seen = new Dictionary<int, string>();
+        foreach (var capability in capabilities)
+            foreach (var channel in capability.Channels)
+                if (!seen.TryAdd(channel, capability.Name) && seen[channel] != capability.Name)
+                    warnings.Add($"Channel {channel + 1} is used by both '{seen[channel]}' and " +
+                                 $"'{capability.Name}'; output for it is unpredictable.");
     }
 
     private static string Text(XElement root, string name, string source) =>

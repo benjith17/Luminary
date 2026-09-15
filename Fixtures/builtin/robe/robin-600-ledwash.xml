@@ -7,16 +7,24 @@
   <created>2026-08-27</created>
 
   <mode id="reduced-rgbw-wash-8bit" name="Reduced RGBW Wash 8bit" channelCount="15">
-    <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="PositionMSpeed" channel="5" />
-    <dimmer name="Control 1" channel="6" />
-    <color name="Color" red="7" green="8" blue="9" />
-    <dimmer name="White" channel="10" />
-    <dimmer name="CTO" channel="11" />
-    <dimmer name="Color" channel="12" />
-    <dimmer name="Zoom" channel="13" />
-    <dimmer name="Shutter" channel="14" />
-    <dimmer name="Dimmer" channel="15" />
+    <intensity>
+      <dimmer name="Dimmer" channel="15" />
+    </intensity>
+    <color>
+      <rgb name="Color" red="7" green="8" blue="9" />
+      <level name="White" channel="10" />
+      <level name="CTO" channel="11" />
+      <level name="Color Wheel" channel="12" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
+      <level name="PositionMSpeed" channel="5" />
+    </focus>
+    <beam>
+      <level name="Control 1" channel="6" />
+      <level name="Zoom" channel="13" />
+      <level name="Shutter" channel="14" />
+    </beam>
   </mode>
 
 </fixture>

@@ -39,6 +39,14 @@ public readonly struct CapabilityReader(XElement element, string source)
         return value;
     }
 
+    public bool Bool(string attribute, bool fallback = false)
+    {
+        if (element.Attribute(attribute)?.Value is not { } raw) return fallback;
+        if (!bool.TryParse(raw, out var value))
+            throw Error($"'{attribute}' must be true or false, but was '{raw}'");
+        return value;
+    }
+
     private string Required(string attribute) =>
         element.Attribute(attribute)?.Value
         ?? throw Error($"<{element.Name.LocalName}> is missing the required '{attribute}' attribute");

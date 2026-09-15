@@ -7,7 +7,9 @@
   <created>2026-08-27</created>
 
   <mode id="3-channel" name="3 Channel" channelCount="3">
-    <color name="Color" red="1" green="2" blue="3" />
+    <color>
+      <rgb name="Color" red="1" green="2" blue="3" />
+    </color>
   </mode>
 
 </fixture>

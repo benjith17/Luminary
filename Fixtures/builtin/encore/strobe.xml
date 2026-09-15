@@ -7,12 +7,20 @@
   <created>2026-08-27</created>
 
   <mode id="34-channel" name="34 Channel" channelCount="34">
-    <dimmer name="Strobe" channel="1" />
-    <dimmerFine name="Dimmer" channel="2" fine="3" />
-    <color name="Color" red="5" green="6" blue="4" />
-    <dimmer name="CTO" channel="7" />
-    <panTiltFine name="Pan/Tilt" pan="29" panFine="30" tilt="31" tiltFine="32" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="Effect" channel="34" />
+    <intensity>
+      <dimmerFine name="Dimmer" channel="2" fine="3" />
+    </intensity>
+    <color>
+      <rgb name="Color" red="5" green="6" blue="4" />
+      <level name="CTO" channel="7" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="29" panFine="30" tilt="31" tiltFine="32" defaultPan="32768" defaultTilt="32768" />
+    </focus>
+    <beam>
+      <level name="Strobe" channel="1" />
+      <level name="Effect" channel="34" />
+    </beam>
   </mode>
 
 </fixture>

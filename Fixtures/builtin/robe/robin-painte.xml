@@ -7,79 +7,95 @@
   <created>2026-08-27</created>
 
   <mode id="mode-1-standard-16-bit" name="Mode 1 - Standard 16 bit" channelCount="44">
-    <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="Position MSpeed" channel="5" default="0" />
-    <dimmer name="Control" channel="6" default="0" />
-    <dimmer name="LED Frequency" channel="7" default="10" />
-    <dimmer name="LED Frequency Adjust" channel="8" default="128" />
-    <dimmer name="Intensity Indication" channel="9" default="0" />
-    <dimmerFine name="Color Wheel" channel="10" fine="11" default="0" />
-    <dimmer name="Cyan" channel="12" default="0" />
-    <dimmer name="Magenta" channel="13" default="0" />
-    <dimmer name="Yellow" channel="14" default="0" />
-    <dimmer name="CTO" channel="15" default="0" />
-    <dimmer name="Tint" channel="16" default="128" />
-    <dimmer name="Color Macro" channel="17" default="0" />
-    <dimmer name="Color Mix MSpeed" channel="18" default="0" />
-    <dimmer name="Focus MSpeed" channel="19" default="0" />
-    <dimmer name="Gobo Wheel 1" channel="20" default="0" />
-    <dimmer name="Gobo Wheel 2" channel="21" default="0" />
-    <dimmerFine name="Gobo 2 Rotation" channel="22" fine="23" default="32768" />
-    <dimmer name="Prism" channel="24" default="0" />
-    <dimmer name="Prism Rotation" channel="25" default="128" />
-    <dimmer name="Frost" channel="26" default="0" />
-    <dimmerFine name="Iris" channel="27" fine="28" default="0" />
-    <dimmerFine name="Zoom" channel="29" fine="30" default="32768" />
-    <dimmerFine name="Focus" channel="31" fine="32" default="32768" />
-    <dimmer name="Shaper Rotation" channel="33" default="128" />
-    <dimmer name="Blade 1" channel="34" default="0" />
-    <dimmer name="Blade 1 Rotation" channel="35" default="128" />
-    <dimmer name="Blade 4" channel="36" default="0" />
-    <dimmer name="Blade 4 Rotation" channel="37" default="128" />
-    <dimmer name="Blade 3" channel="38" default="0" />
-    <dimmer name="Blade 3 Rotation" channel="39" default="128" />
-    <dimmer name="Blade 2" channel="40" default="0" />
-    <dimmer name="Blade 2 Rotation" channel="41" default="128" />
-    <dimmer name="Shutter" channel="42" default="32" />
-    <dimmerFine name="Dimmer" channel="43" fine="44" default="0" />
+    <intensity>
+      <dimmerFine name="Dimmer" channel="43" fine="44" default="0" />
+    </intensity>
+    <color>
+      <levelFine name="Color Wheel" channel="10" fine="11" default="0" />
+      <level name="Cyan" channel="12" default="0" />
+      <level name="Magenta" channel="13" default="0" />
+      <level name="Yellow" channel="14" default="0" />
+      <level name="CTO" channel="15" default="0" />
+      <level name="Tint" channel="16" default="128" />
+      <level name="Color Macro" channel="17" default="0" />
+      <level name="Color Mix MSpeed" channel="18" default="0" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
+      <level name="Position MSpeed" channel="5" default="0" />
+    </focus>
+    <beam>
+      <level name="Control" channel="6" default="0" />
+      <level name="LED Frequency" channel="7" default="10" />
+      <level name="LED Frequency Adjust" channel="8" default="128" />
+      <level name="Intensity Indication" channel="9" default="0" />
+      <level name="Focus MSpeed" channel="19" default="0" />
+      <level name="Gobo Wheel 1" channel="20" default="0" />
+      <level name="Gobo Wheel 2" channel="21" default="0" />
+      <levelFine name="Gobo 2 Rotation" channel="22" fine="23" default="32768" />
+      <level name="Prism" channel="24" default="0" />
+      <level name="Prism Rotation" channel="25" default="128" />
+      <level name="Frost" channel="26" default="0" />
+      <levelFine name="Iris" channel="27" fine="28" default="0" />
+      <levelFine name="Zoom" channel="29" fine="30" default="32768" />
+      <levelFine name="Focus" channel="31" fine="32" default="32768" />
+      <level name="Shaper Rotation" channel="33" default="128" />
+      <level name="Blade 1" channel="34" default="0" />
+      <level name="Blade 1 Rotation" channel="35" default="128" />
+      <level name="Blade 4" channel="36" default="0" />
+      <level name="Blade 4 Rotation" channel="37" default="128" />
+      <level name="Blade 3" channel="38" default="0" />
+      <level name="Blade 3 Rotation" channel="39" default="128" />
+      <level name="Blade 2" channel="40" default="0" />
+      <level name="Blade 2 Rotation" channel="41" default="128" />
+      <level name="Shutter" channel="42" default="32" />
+    </beam>
   </mode>
 
   <mode id="mode-2-enhanced-gobo-control" name="Mode 2 - enhanced gobo control" channelCount="45">
-    <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="Position MSpeed" channel="5" default="0" />
-    <dimmer name="Control" channel="6" default="0" />
-    <dimmer name="LED Frequency" channel="7" default="10" />
-    <dimmer name="LED Frequency Adjust" channel="8" default="128" />
-    <dimmer name="Intensity Indication" channel="9" default="0" />
-    <dimmerFine name="Color Wheel" channel="10" fine="11" default="0" />
-    <dimmer name="Cyan" channel="12" default="0" />
-    <dimmer name="Magenta" channel="13" default="0" />
-    <dimmer name="Yellow" channel="14" default="0" />
-    <dimmer name="CTO" channel="15" default="0" />
-    <dimmer name="Tint" channel="16" default="128" />
-    <dimmer name="Color Macro" channel="17" default="0" />
-    <dimmer name="Color Mix MSpeed" channel="18" default="0" />
-    <dimmer name="Focus MSpeed" channel="19" default="0" />
-    <dimmer name="Gobo Wheel 1" channel="20" default="0" />
-    <dimmerFine name="Gobo Wheel 2" channel="21" fine="22" default="0" />
-    <dimmerFine name="Gobo 2 Rotation" channel="23" fine="24" default="32768" />
-    <dimmer name="Prism" channel="25" default="0" />
-    <dimmer name="Prism Rotation" channel="26" default="128" />
-    <dimmer name="Frost" channel="27" default="0" />
-    <dimmerFine name="Iris" channel="28" fine="29" default="0" />
-    <dimmerFine name="Zoom" channel="30" fine="31" default="32768" />
-    <dimmerFine name="Focus" channel="32" fine="33" default="32768" />
-    <dimmer name="Shaper Rotation" channel="34" default="128" />
-    <dimmer name="Blade 1" channel="35" default="0" />
-    <dimmer name="Blade 1 Rotation" channel="36" default="128" />
-    <dimmer name="Blade 4" channel="37" default="0" />
-    <dimmer name="Blade 4 Rotation" channel="38" default="128" />
-    <dimmer name="Blade 3" channel="39" default="0" />
-    <dimmer name="Blade 3 Rotation" channel="40" default="128" />
-    <dimmer name="Blade 2" channel="41" default="0" />
-    <dimmer name="Blade 2 Rotation" channel="42" default="128" />
-    <dimmer name="Shutter" channel="43" default="32" />
-    <dimmerFine name="Dimmer" channel="44" fine="45" default="0" />
+    <intensity>
+      <dimmerFine name="Dimmer" channel="44" fine="45" default="0" />
+    </intensity>
+    <color>
+      <levelFine name="Color Wheel" channel="10" fine="11" default="0" />
+      <level name="Cyan" channel="12" default="0" />
+      <level name="Magenta" channel="13" default="0" />
+      <level name="Yellow" channel="14" default="0" />
+      <level name="CTO" channel="15" default="0" />
+      <level name="Tint" channel="16" default="128" />
+      <level name="Color Macro" channel="17" default="0" />
+      <level name="Color Mix MSpeed" channel="18" default="0" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
+      <level name="Position MSpeed" channel="5" default="0" />
+    </focus>
+    <beam>
+      <level name="Control" channel="6" default="0" />
+      <level name="LED Frequency" channel="7" default="10" />
+      <level name="LED Frequency Adjust" channel="8" default="128" />
+      <level name="Intensity Indication" channel="9" default="0" />
+      <level name="Focus MSpeed" channel="19" default="0" />
+      <level name="Gobo Wheel 1" channel="20" default="0" />
+      <levelFine name="Gobo Wheel 2" channel="21" fine="22" default="0" />
+      <levelFine name="Gobo 2 Rotation" channel="23" fine="24" default="32768" />
+      <level name="Prism" channel="25" default="0" />
+      <level name="Prism Rotation" channel="26" default="128" />
+      <level name="Frost" channel="27" default="0" />
+      <levelFine name="Iris" channel="28" fine="29" default="0" />
+      <levelFine name="Zoom" channel="30" fine="31" default="32768" />
+      <levelFine name="Focus" channel="32" fine="33" default="32768" />
+      <level name="Shaper Rotation" channel="34" default="128" />
+      <level name="Blade 1" channel="35" default="0" />
+      <level name="Blade 1 Rotation" channel="36" default="128" />
+      <level name="Blade 4" channel="37" default="0" />
+      <level name="Blade 4 Rotation" channel="38" default="128" />
+      <level name="Blade 3" channel="39" default="0" />
+      <level name="Blade 3 Rotation" channel="40" default="128" />
+      <level name="Blade 2" channel="41" default="0" />
+      <level name="Blade 2 Rotation" channel="42" default="128" />
+      <level name="Shutter" channel="43" default="32" />
+    </beam>
   </mode>
 
 </fixture>

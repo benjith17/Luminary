@@ -21,6 +21,11 @@ public abstract class CapabilityViewModelBase(FixtureCapability capability) : Vi
     public string MacroName { get; } = capability.MacroName;
     public IReadOnlyList<string> MacroParameterNames { get; } = capability.MacroParameters;
 
+    // Attribute family, and whether this is its family's target for '@'. Carried from the model so
+    // the interpreter can route by family rather than by position in the personality.
+    public CapabilityFamily Family { get; } = capability.Family;
+    public bool Primary { get; } = capability.Primary;
+
     // Public view of the parameters for the macro interpreter: read each parameter's Max (for
     // percent scaling) and drive its Manual layer. Ordered to match MacroParameterNames.
     public IReadOnlyList<CapabilityParameter> MacroParameters => Parameters;

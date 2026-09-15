@@ -87,6 +87,20 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
+
+            <!-- Hidden entirely for a clean personality, so warnings read as exceptional. -->
+            <StackPanel IsVisible="{Binding HasWarnings}">
+              <TextBlock Text="WARNINGS" FontSize="10" FontWeight="Bold"
+                         Foreground="{DynamicResource ThemeWarning}" Margin="0 18 0 6" />
+              <ItemsControl ItemsSource="{Binding DetailWarnings}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{Binding}" FontSize="12" TextWrapping="Wrap" Margin="0 2"
+                               Foreground="{DynamicResource ThemeWarning}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
           </StackPanel>
         </ScrollViewer>
       </Border>

@@ -7,33 +7,41 @@
   <created>2026-08-27</created>
 
   <mode id="mode-1-1ch" name="Mode 1 - 1ch" channelCount="1">
-    <dimmer name="Dimmer" channel="1" default="0" />
+    <intensity>
+      <dimmer name="Dimmer" channel="1" default="0" />
+    </intensity>
   </mode>
 
   <mode id="mode-2-2ch" name="Mode 2 - 2ch" channelCount="2">
-    <dimmer name="Dimmer 1" channel="1" default="0" />
-    <dimmer name="Dimmer 2" channel="2" default="0" />
+    <intensity>
+      <dimmer name="Dimmer 1" channel="1" default="0" />
+      <dimmer name="Dimmer 2" channel="2" default="0" />
+    </intensity>
   </mode>
 
   <mode id="mode-3-5ch" name="Mode 3 - 5ch" channelCount="5">
-    <dimmer name="Dimmer 1" channel="1" default="0" />
-    <dimmer name="Dimmer 2" channel="2" default="0" />
-    <dimmer name="Dimmer 3" channel="3" default="0" />
-    <dimmer name="Dimmer 4" channel="4" default="0" />
-    <dimmer name="Dimmer 5" channel="5" default="0" />
+    <intensity>
+      <dimmer name="Dimmer 1" channel="1" default="0" />
+      <dimmer name="Dimmer 2" channel="2" default="0" />
+      <dimmer name="Dimmer 3" channel="3" default="0" />
+      <dimmer name="Dimmer 4" channel="4" default="0" />
+      <dimmer name="Dimmer 5" channel="5" default="0" />
+    </intensity>
   </mode>
 
   <mode id="mode-4-10ch" name="Mode 4 - 10ch" channelCount="10">
-    <dimmer name="Dimmer 1" channel="1" default="0" />
-    <dimmer name="Dimmer 2" channel="2" default="0" />
-    <dimmer name="Dimmer 3" channel="3" default="0" />
-    <dimmer name="Dimmer 4" channel="4" default="0" />
-    <dimmer name="Dimmer 5" channel="5" default="0" />
-    <dimmer name="Dimmer 6" channel="6" default="0" />
-    <dimmer name="Dimmer 7" channel="7" default="0" />
-    <dimmer name="Dimmer 8" channel="8" default="0" />
-    <dimmer name="Dimmer 9" channel="9" default="0" />
-    <dimmer name="Dimmer 10" channel="10" default="0" />
+    <intensity>
+      <dimmer name="Dimmer 1" channel="1" default="0" />
+      <dimmer name="Dimmer 2" channel="2" default="0" />
+      <dimmer name="Dimmer 3" channel="3" default="0" />
+      <dimmer name="Dimmer 4" channel="4" default="0" />
+      <dimmer name="Dimmer 5" channel="5" default="0" />
+      <dimmer name="Dimmer 6" channel="6" default="0" />
+      <dimmer name="Dimmer 7" channel="7" default="0" />
+      <dimmer name="Dimmer 8" channel="8" default="0" />
+      <dimmer name="Dimmer 9" channel="9" default="0" />
+      <dimmer name="Dimmer 10" channel="10" default="0" />
+    </intensity>
   </mode>
 
 </fixture>

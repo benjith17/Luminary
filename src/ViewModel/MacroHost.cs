@@ -1,3 +1,4 @@
+using Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,8 +79,19 @@ public sealed class MacroHost(
                     yield return n;
     }
 
-    // '@' picks the first capability whose parameter count equals the number of values (arity
-    // inference). 'set Name[.n]' picks the named capability (the nth instance, 1-based).
+    // How many values '@' was given decides which attribute family it addresses. Routing by family
+    // rather than by "first capability with this many parameters" is what stops `@ 50` landing on a
+    // beam channel that happens to take one value, such as a zoom, instead of the dimmer.
+    private static CapabilityFamily? FamilyForArity(int arity) => arity switch
+    {
+        1 => CapabilityFamily.Intensity,
+        2 => CapabilityFamily.Focus,
+        3 => CapabilityFamily.Color,
+        _ => null
+    };
+
+    // '@' resolves by value count to a family, then to that family's primary capability (or its
+    // first). 'set Name[.n]' picks the named capability (the nth instance, 1-based).
     private static CapabilityViewModelBase? ResolveCapability(
         FixtureListItemViewModel fixture, SetStatement statement, Action<Diagnostic> report)
     {
@@ -88,10 +100,22 @@ public sealed class MacroHost(
             case InferredTarget:
             {
                 var arity = statement.Values.Count;
-                var match = fixture.Capabilities.FirstOrDefault(c => c.MacroParameters.Count == arity);
+                if (FamilyForArity(arity) is not { } family)
+                {
+                    report(new Diagnostic(statement.Line, 0,
+                        $"'@' takes 1, 2 or 3 values (intensity, position or colour), not {arity}."));
+                    return null;
+                }
+
+                var candidates = fixture.Capabilities
+                    .Where(c => c.Family == family && c.MacroParameters.Count == arity)
+                    .ToList();
+
+                var match = candidates.FirstOrDefault(c => c.Primary) ?? candidates.FirstOrDefault();
                 if (match is null)
                     report(new Diagnostic(statement.Line, 0,
-                        $"Fixture {fixture.Number} has no capability taking {arity} value{Plural(arity)} for '@'."));
+                        $"Fixture {fixture.Number} ({fixture.Name}) has no {family.ToString().ToLowerInvariant()} " +
+                        $"capability, so '@' with {arity} value{Plural(arity)} cannot resolve."));
                 return match;
             }
 

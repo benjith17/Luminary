@@ -12,6 +12,8 @@ public class PanTiltFineCapability(
     public ushort DefaultPan     { get; set; } = defaultPan;
     public ushort DefaultTilt    { get; set; } = defaultTilt;
 
+    public override IEnumerable<int> Channels => [Offset, PanFineOffset, TiltOffset, TiltFineOffset];
+
     public override string MacroName => "Position";
     public override IReadOnlyList<string> MacroParameters { get; } = ["Pan", "Tilt"];
 }

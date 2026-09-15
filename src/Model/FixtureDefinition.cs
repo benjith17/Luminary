@@ -29,7 +29,14 @@ public class FixtureDefinition
     // Number of DMX channels this personality occupies, used for patching / addressing.
     public int ChannelCount { get; set; }
 
+    // Ordered by first DMX channel, NOT by position in the file. Cues and keyframe tracks address
+    // capabilities by index, so this order is part of the show-file contract — regrouping a fixture
+    // into families must not shuffle it.
     public List<FixtureCapability> Capabilities { get; set; } = [];
+
+    // Non-fatal problems with the definition, shown in the fixture picker so the operator sees them
+    // before patching. The personality still loads and works.
+    public IReadOnlyList<string> Warnings { get; set; } = [];
 
     // True for a placeholder standing in for a personality this installation cannot resolve —
     // a show referencing a library that isn't installed. It carries no capabilities, so it emits

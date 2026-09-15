@@ -52,7 +52,12 @@ public partial class AddFixtureDialogViewModel : ViewModelBase
     public string DetailModel => SelectedModel?.Name ?? string.Empty;
     public string DetailManufacturer => SelectedManufacturer?.Name ?? string.Empty;
     public string DetailChannels => SelectedMode is { } d ? $"{d.ChannelCount} channels" : string.Empty;
-    public IReadOnlyList<string> DetailCapabilities => SelectedMode?.Capabilities.Select(c => c.Name).ToList() ?? [];
+    public IReadOnlyList<string> DetailCapabilities =>
+        SelectedMode?.Capabilities.Select(c => $"{c.Name}  ({c.Family.ToString().ToLowerInvariant()})").ToList() ?? [];
+
+    // Non-fatal problems with the personality, shown before the operator commits to patching it.
+    public IReadOnlyList<string> DetailWarnings => SelectedMode?.Warnings ?? [];
+    public bool HasWarnings => DetailWarnings.Count > 0;
 
     public bool CanAdd => SelectedMode is not null;
     public FixtureDefinition? Result => SelectedMode;
@@ -84,6 +89,8 @@ public partial class AddFixtureDialogViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanAdd));
         OnPropertyChanged(nameof(DetailChannels));
         OnPropertyChanged(nameof(DetailCapabilities));
+        OnPropertyChanged(nameof(DetailWarnings));
+        OnPropertyChanged(nameof(HasWarnings));
     }
 
     // Rebuilds the manufacturer list (and its nested models) for the current search, preserving the

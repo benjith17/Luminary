@@ -6,6 +6,12 @@
              x:DataType="vm:FixtureEditorViewModel">
 
   <UserControl.DataTemplates>
+    <DataTemplate x:DataType="vm:LevelFineCapabilityViewModel">
+      <views:LevelFineCapabilityEditor />
+    </DataTemplate>
+    <DataTemplate x:DataType="vm:LevelCapabilityViewModel">
+      <views:LevelCapabilityEditor />
+    </DataTemplate>
     <DataTemplate x:DataType="vm:DimmerFineCapabilityViewModel">
       <views:DimmerFineCapabilityEditor />
     </DataTemplate>

@@ -7,44 +7,60 @@
   <created>2026-08-27</created>
 
   <mode id="basic" name="Basic" channelCount="19">
-    <dimmer name="Shutter" channel="1" default="30" />
-    <dimmer name="Dimmer" channel="2" default="0" />
-    <dimmer name="Cyan" channel="3" default="0" />
-    <dimmer name="Magenta" channel="4" default="0" />
-    <dimmer name="Yellow" channel="5" default="0" />
-    <dimmer name="Color Wheel" channel="6" default="0" />
-    <dimmer name="Gobo Wheel 1" channel="7" default="0" />
-    <dimmerFine name="Gobo 1 Rotation" channel="8" fine="9" default="32768" />
-    <dimmer name="Gobo Wheel 2" channel="10" default="0" />
-    <dimmer name="Prism" channel="11" default="0" />
-    <dimmer name="Iris" channel="12" default="0" />
-    <dimmer name="Zoom" channel="13" default="128" />
-    <dimmer name="Focus" channel="14" default="128" />
-    <panTiltFine name="Pan/Tilt" pan="15" panFine="16" tilt="17" tiltFine="18" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="Control" channel="19" default="0" />
+    <intensity>
+      <dimmer name="Dimmer" channel="2" default="0" />
+    </intensity>
+    <color>
+      <level name="Cyan" channel="3" default="0" />
+      <level name="Magenta" channel="4" default="0" />
+      <level name="Yellow" channel="5" default="0" />
+      <level name="Color Wheel" channel="6" default="0" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="15" panFine="16" tilt="17" tiltFine="18" defaultPan="32768" defaultTilt="32768" />
+    </focus>
+    <beam>
+      <level name="Shutter" channel="1" default="30" />
+      <level name="Gobo Wheel 1" channel="7" default="0" />
+      <levelFine name="Gobo 1 Rotation" channel="8" fine="9" default="32768" />
+      <level name="Gobo Wheel 2" channel="10" default="0" />
+      <level name="Prism" channel="11" default="0" />
+      <level name="Iris" channel="12" default="0" />
+      <level name="Zoom" channel="13" default="128" />
+      <level name="Focus" channel="14" default="128" />
+      <level name="Control" channel="19" default="0" />
+    </beam>
   </mode>
 
   <mode id="extended" name="Extended" channelCount="27">
-    <dimmer name="Shutter" channel="1" default="30" />
-    <dimmerFine name="Dimmer" channel="2" fine="3" default="0" />
-    <dimmer name="Cyan" channel="4" default="0" />
-    <dimmer name="Magenta" channel="5" default="0" />
-    <dimmer name="Yellow" channel="6" default="0" />
-    <dimmer name="Color Wheel" channel="7" default="0" />
-    <dimmer name="Gobo Wheel 1" channel="8" default="0" />
-    <dimmerFine name="Gobo 1 Rotation" channel="9" fine="10" default="32768" />
-    <dimmer name="Gobo Wheel 2" channel="11" default="0" />
-    <dimmer name="Prism" channel="12" default="0" />
-    <dimmer name="Iris" channel="13" default="0" />
-    <dimmerFine name="Zoom" channel="14" fine="15" default="32768" />
-    <dimmerFine name="Focus" channel="16" fine="17" default="32768" />
-    <panTiltFine name="Pan/Tilt" pan="18" panFine="19" tilt="20" tiltFine="21" defaultPan="32768" defaultTilt="32768" />
-    <dimmer name="Control" channel="22" default="0" />
-    <dimmer name="Effect" channel="23" default="0" />
-    <dimmer name="Effect Rate" channel="24" default="128" />
-    <dimmer name="Effect 2" channel="25" default="0" />
-    <dimmer name="Effect 2 Rate" channel="26" default="128" />
-    <dimmer name="Effect Sync" channel="27" default="36" />
+    <intensity>
+      <dimmerFine name="Dimmer" channel="2" fine="3" default="0" />
+    </intensity>
+    <color>
+      <level name="Cyan" channel="4" default="0" />
+      <level name="Magenta" channel="5" default="0" />
+      <level name="Yellow" channel="6" default="0" />
+      <level name="Color Wheel" channel="7" default="0" />
+    </color>
+    <focus>
+      <panTiltFine name="Pan/Tilt" pan="18" panFine="19" tilt="20" tiltFine="21" defaultPan="32768" defaultTilt="32768" />
+    </focus>
+    <beam>
+      <level name="Shutter" channel="1" default="30" />
+      <level name="Gobo Wheel 1" channel="8" default="0" />
+      <levelFine name="Gobo 1 Rotation" channel="9" fine="10" default="32768" />
+      <level name="Gobo Wheel 2" channel="11" default="0" />
+      <level name="Prism" channel="12" default="0" />
+      <level name="Iris" channel="13" default="0" />
+      <levelFine name="Zoom" channel="14" fine="15" default="32768" />
+      <levelFine name="Focus" channel="16" fine="17" default="32768" />
+      <level name="Control" channel="22" default="0" />
+      <level name="Effect" channel="23" default="0" />
+      <level name="Effect Rate" channel="24" default="128" />
+      <level name="Effect 2" channel="25" default="0" />
+      <level name="Effect 2 Rate" channel="26" default="128" />
+      <level name="Effect Sync" channel="27" default="36" />
+    </beam>
   </mode>
 
 </fixture>

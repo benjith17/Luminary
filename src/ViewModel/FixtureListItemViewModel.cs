@@ -96,6 +96,8 @@ public partial class FixtureListItemViewModel : ViewModelBase
         FixtureCapability capability, Fixture fixture, ShowService showService) =>
         capability switch
         {
+            LevelFineCapability lf      => new LevelFineCapabilityViewModel(lf, fixture, showService),
+            LevelCapability l           => new LevelCapabilityViewModel(l, fixture, showService),
             DimmerFineCapability df     => new DimmerFineCapabilityViewModel(df, fixture, showService),
             DimmerCapability d          => new DimmerCapabilityViewModel(d, fixture, showService),
             ColorCapability c           => new ColorCapabilityViewModel(c, fixture, showService),

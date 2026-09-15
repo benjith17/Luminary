@@ -11,6 +11,8 @@ public class ColorCapability(
     public byte DefaultGreen  { get; set; } = defaultGreen;
     public byte DefaultBlue   { get; set; } = defaultBlue;
 
+    public override IEnumerable<int> Channels => [Offset, GreenOffset, BlueOffset];
+
     public override string MacroName => "Color";
     public override IReadOnlyList<string> MacroParameters { get; } = ["R", "G", "B"];
 }
