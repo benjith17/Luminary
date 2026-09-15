@@ -1,3 +1,4 @@
+using Fixtures;
 using System.IO;
 using System.Text.Json;
 using Model;
@@ -26,7 +27,7 @@ public sealed class JsonShowStore : IShowStore
 
     private static ShowFileDto ToDto(ShowService show) => new()
     {
-        Version = 3,
+        Version = ShowFileDto.CurrentVersion,
         Universes = show.Universes.Select(u => new UniverseDto
         {
             Number = u.Number,
@@ -42,7 +43,7 @@ public sealed class JsonShowStore : IShowStore
             Id = f.Id,
             Number = f.Number,
             Name = f.Name,
-            Personality = f.FixtureType.Name,
+            Personality = f.FixtureType.Key,
             Universe = f.UniverseNumber,
             Address = f.Channel + 1
         }).ToList(),
@@ -120,6 +121,22 @@ public sealed class JsonShowStore : IShowStore
     private static List<CueFixtureSnapshot> FromSnapshotDtos(List<SnapshotDto> dtos) =>
         dtos.Select(s => new CueFixtureSnapshot { FixtureId = s.FixtureId, CapabilityValues = s.Values }).ToList();
 
+    // Before version 4 a personality was stored as its display name, resolved against a hard-coded
+    // library. Those names are now pack-qualified keys, so old shows are mapped across on load.
+    // Anything not listed here was never a built-in, and becomes a missing-fixture placeholder.
+    private static readonly Dictionary<string, string> LegacyPersonalityKeys = new()
+    {
+        ["Generic Dimmer"]  = "builtin:generic/dimmer/1-channel",
+        ["Generic RGB"]     = "builtin:generic/rgb/3-channel",
+        ["Big Test Light"]  = "builtin:generic/big-test-light/16-channel",
+        ["Moving Head"]     = "builtin:generic/moving-head/6-channel",
+        ["Encore Strobe"]   = "builtin:encore/strobe/34-channel",
+        ["Robe Robin 600 LEDWash (Reduced RGBW Wash 8bit)"] = "builtin:robe/robin-600-ledwash/reduced-rgbw-wash-8bit",
+    };
+
+    private static string MigratePersonality(string stored, int version) =>
+        version >= 4 ? stored : LegacyPersonalityKeys.GetValueOrDefault(stored, stored);
+
     private static ShowService FromDto(ShowFileDto dto, FixtureLibrary library)
     {
         var show = new ShowService
@@ -156,8 +173,11 @@ public sealed class JsonShowStore : IShowStore
 
         foreach (var f in dto.Fixtures)
         {
-            // Personality may be unavailable (e.g. a plug-in that isn't installed) — skip it.
-            if (library.Get(f.Personality) is not { } def) continue;
+            var key = MigratePersonality(f.Personality, dto.Version);
+
+            // An unresolvable personality becomes a placeholder rather than being dropped. Dropping
+            // it would silently shrink the patch, and the next save would write that loss to disk.
+            var def = library.Get(key) ?? FixtureDefinition.Missing(key);
 
             show.Fixtures.Add(new Fixture(f.Name, f.Address - 1, def)
             {

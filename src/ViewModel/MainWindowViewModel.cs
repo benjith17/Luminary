@@ -1,3 +1,5 @@
+using System.IO;
+using Fixtures;
 using System.ComponentModel;
 using ArtNet;
 using Avalonia;
@@ -11,7 +13,7 @@ namespace ViewModel;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly FixtureLibrary _library = new();
+    private FixtureLibrary _library = new();
     private readonly IShowStore _store = new JsonShowStore();
     private readonly MidiInputService _midi = new();
 
@@ -88,14 +90,35 @@ public partial class MainWindowViewModel : ViewModelBase
         // Route every inbound message to the current show's dispatcher (rebuilt on each LoadShow).
         _midi.MessageReceived += m => _midiDispatcher?.Dispatch(m);
 
+        _library = FixtureLibraryLoader.Load();
         LoadShow(CreateEmptyShow(), path: null);
 
         _ = _midi.StartAsync();
     }
 
-    public void New() => LoadShow(CreateEmptyShow(), path: null);
+    public void New()
+    {
+        _library = FixtureLibraryLoader.Load();
+        LoadShow(CreateEmptyShow(), path: null);
+    }
 
-    public void Open(string path) => LoadShow(_store.Load(path, _library), path);
+    public void Open(string path)
+    {
+        // Reload before reading the show: a show can travel with a .lumfl beside it, and that
+        // library is only visible once we know which folder the show lives in.
+        _library = FixtureLibraryLoader.Load(Path.GetDirectoryName(path));
+        LoadShow(_store.Load(path, _library), path);
+    }
+
+    /// <summary>Problems found loading the fixture libraries — bad files, clashing packs.</summary>
+    public IReadOnlyList<LoadIssue> LibraryIssues => _library.Issues;
+
+    /// <summary>
+    /// Patched fixtures whose personality this installation cannot resolve. They hold their place
+    /// in the patch and emit no DMX, but the operator has to be told: the rig will be short.
+    /// </summary>
+    public IReadOnlyList<Fixture> MissingFixtures =>
+        [.. _show.Fixtures.Where(f => f.FixtureType.IsMissing)];
 
     public void Save(string path)
     {

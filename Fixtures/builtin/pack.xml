@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pack xmlns="urn:luminary:pack:1" id="builtin">
+  <name>Luminary Built-in Fixtures</name>
+  <version>1</version>
+  <author>Luminary</author>
+  <created>2026-08-27</created>
+</pack>

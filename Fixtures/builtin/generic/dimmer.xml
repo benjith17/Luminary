@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fixture xmlns="urn:luminary:fixture:1">
+
+  <manufacturer>Generic</manufacturer>
+  <model>Dimmer</model>
+  <author>Luminary</author>
+  <created>2026-08-27</created>
+
+  <mode id="1-channel" name="1 Channel" channelCount="1">
+    <dimmer name="Dimmer" channel="1" />
+  </mode>
+
+</fixture>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  Luminary fixture schema — DRAFT, for review.
+
+  Each capability is its OWN element with its OWN attribute rules, so the
+  schema states per-type what is required: a <color> needs red, green and
+  blue; a <dimmer> needs channel. That constraint is declarative here; in
+  TOML or YAML it would be hand-written validation code.
+
+  Attribute names mirror the constructor parameters of the corresponding
+  FixtureCapability subclass, minus the "Offset" suffix.
+
+  A fixture carries NO id: its identity is its path inside the pack. Only
+  the mode id is in the file, because one file holds several modes — and it
+  is required, since a defaulted-from-@name id would silently change
+  identity the moment someone corrects a display name.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:luminary:fixture:1"
+           targetNamespace="urn:luminary:fixture:1"
+           elementFormDefault="qualified">
+
+  <!-- ============ identity ============ -->
+  <!-- Slug form: lowercase alphanumerics in hyphen-separated words. Enforcing
+       the shape means a stray "Reduced 8bit" is caught at author time rather
+       than becoming an unmatchable key inside a saved show. -->
+
+  <xs:simpleType name="idSegment">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- ============ capabilities ============ -->
+  <!-- One element per FixtureCapability subclass. -->
+
+  <!-- DimmerCapability(name, offset, defaultValue) -->
+  <xs:element name="dimmer">
+    <xs:complexType>
+      <xs:attribute name="name"    type="xs:string"          use="required" />
+      <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
+      <xs:attribute name="default" type="xs:unsignedByte"    default="0" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- DimmerFineCapability(name, offset, fineOffset, defaultValue) -->
+  <xs:element name="dimmerFine">
+    <xs:complexType>
+      <xs:attribute name="name"    type="xs:string"          use="required" />
+      <xs:attribute name="channel" type="xs:positiveInteger" use="required" />
+      <xs:attribute name="fine"    type="xs:positiveInteger" use="required" />
+      <xs:attribute name="default" type="xs:unsignedShort"   default="0" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ColorCapability(name, redOffset, greenOffset, blueOffset, defaultRed, defaultGreen, defaultBlue) -->
+  <xs:element name="color">
+    <xs:complexType>
+      <xs:attribute name="name"         type="xs:string"          use="required" />
+      <xs:attribute name="red"          type="xs:positiveInteger" use="required" />
+      <xs:attribute name="green"        type="xs:positiveInteger" use="required" />
+      <xs:attribute name="blue"         type="xs:positiveInteger" use="required" />
+      <xs:attribute name="defaultRed"   type="xs:unsignedByte"    default="0" />
+      <xs:attribute name="defaultGreen" type="xs:unsignedByte"    default="0" />
+      <xs:attribute name="defaultBlue"  type="xs:unsignedByte"    default="0" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PanTiltCapability(name, panOffset, tiltOffset, defaultPan, defaultTilt) — 8-bit -->
+  <xs:element name="panTilt">
+    <xs:complexType>
+      <xs:attribute name="name"        type="xs:string"          use="required" />
+      <xs:attribute name="pan"         type="xs:positiveInteger" use="required" />
+      <xs:attribute name="tilt"        type="xs:positiveInteger" use="required" />
+      <xs:attribute name="defaultPan"  type="xs:unsignedByte"    default="0" />
+      <xs:attribute name="defaultTilt" type="xs:unsignedByte"    default="0" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- PanTiltFineCapability(name, panOffset, panFineOffset, tiltOffset, tiltFineOffset,
+                             defaultPan, defaultTilt) — 16-bit, so defaults are unsignedShort -->
+  <xs:element name="panTiltFine">
+    <xs:complexType>
+      <xs:attribute name="name"        type="xs:string"          use="required" />
+      <xs:attribute name="pan"         type="xs:positiveInteger" use="required" />
+      <xs:attribute name="panFine"     type="xs:positiveInteger" use="required" />
+      <xs:attribute name="tilt"        type="xs:positiveInteger" use="required" />
+      <xs:attribute name="tiltFine"    type="xs:positiveInteger" use="required" />
+      <xs:attribute name="defaultPan"  type="xs:unsignedShort"   default="0" />
+      <xs:attribute name="defaultTilt" type="xs:unsignedShort"   default="0" />
+    </xs:complexType>
+  </xs:element>
+
+  <!-- ============ document structure ============ -->
+
+  <xs:element name="mode">
+    <xs:complexType>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element ref="dimmer" />
+        <xs:element ref="dimmerFine" />
+        <xs:element ref="color" />
+        <xs:element ref="panTilt" />
+        <xs:element ref="panTiltFine" />
+        <!-- Plug-in capabilities, in the plug-in's OWN namespace. Two plug-ins
+             can both define "goboWheel" without colliding, because the factory
+             registry keys on (namespace, localName) rather than on the name.
+             processContents="lax" validates them when the plug-in's schema is
+             installed and lets them pass when it isn't. A misspelt CORE
+             capability is still rejected — it would be in this namespace. -->
+        <xs:any namespace="##other" processContents="lax" />
+      </xs:choice>
+      <xs:attribute name="id"           type="idSegment"          use="required" />
+      <xs:attribute name="name"         type="xs:string"          use="required" />
+      <xs:attribute name="channelCount" type="xs:positiveInteger" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="fixture">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="manufacturer" type="xs:string" />
+        <xs:element name="model"        type="xs:string" />
+        <!-- Provenance of the DEFINITION, not of the light itself. Optional, so
+             a quick one-off fixture isn't blocked, but set on anything shipped. -->
+        <xs:element name="author"       type="xs:string" minOccurs="0" />
+        <xs:element name="created"      type="xs:date"   minOccurs="0" />
+        <xs:element ref="mode" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

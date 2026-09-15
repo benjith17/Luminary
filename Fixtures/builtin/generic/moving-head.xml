@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fixture xmlns="urn:luminary:fixture:1">
+
+  <manufacturer>Generic</manufacturer>
+  <model>Moving Head</model>
+  <author>Luminary</author>
+  <created>2026-08-27</created>
+
+  <mode id="6-channel" name="6 Channel" channelCount="6">
+    <panTilt name="Pan/Tilt" pan="1" tilt="2" />
+    <dimmer name="Dimmer" channel="3" />
+    <color name="Color" red="4" green="5" blue="6" />
+  </mode>
+
+</fixture>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fixture xmlns="urn:luminary:fixture:1">
+
+  <manufacturer>Robe</manufacturer>
+  <model>Robin Pointe</model>
+  <author>Luminary</author>
+  <created>2026-08-27</created>
+
+  <mode id="mode-1-standard-16bit" name="Mode 1 - Standard 16bit" channelCount="24">
+    <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
+    <dimmer name="Position MSpeed" channel="5" default="0" />
+    <dimmer name="Control" channel="6" default="0" />
+    <dimmerFine name="Color Wheel" channel="7" fine="8" default="0" />
+    <dimmer name="Effect Rate" channel="9" default="0" />
+    <dimmer name="Gobo Wheel 1" channel="10" default="0" />
+    <dimmer name="Gobo Wheel 2" channel="11" default="0" />
+    <dimmerFine name="Gobo 2 Rotation" channel="12" fine="13" default="32768" />
+    <dimmer name="Prism" channel="14" default="0" />
+    <dimmer name="Prism Rotation" channel="15" default="128" />
+    <dimmer name="Frost" channel="16" default="0" />
+    <dimmerFine name="Zoom" channel="17" fine="18" default="32768" />
+    <dimmerFine name="Focus" channel="19" fine="20" default="32896" />
+    <dimmer name="Autofocus" channel="21" default="0" />
+    <dimmer name="Shutter" channel="22" default="32" />
+    <dimmerFine name="Dimmer" channel="23" fine="24" default="0" />
+  </mode>
+
+  <mode id="mode-2-reduced-8bit" name="Mode 2 - Reduced 8bit" channelCount="16">
+    <panTilt name="Pan/Tilt" pan="1" tilt="2" defaultPan="128" defaultTilt="128" />
+    <dimmer name="Position MSpeed" channel="3" default="0" />
+    <dimmer name="Control" channel="4" default="0" />
+    <dimmer name="Color Wheel" channel="5" default="0" />
+    <dimmer name="Effect Rate" channel="6" default="0" />
+    <dimmer name="Gobo Wheel 1" channel="7" default="0" />
+    <dimmer name="Gobo Wheel 2" channel="8" default="0" />
+    <dimmer name="Gobo 2 Rotation" channel="9" default="128" />
+    <dimmer name="Prism" channel="10" default="0" />
+    <dimmer name="Prism Rotation" channel="11" default="128" />
+    <dimmer name="Frost" channel="12" default="0" />
+    <dimmer name="Zoom" channel="13" default="128" />
+    <dimmer name="Focus" channel="14" default="128" />
+    <dimmer name="Shutter" channel="15" default="32" />
+    <dimmer name="Dimmer" channel="16" default="0" />
+  </mode>
+
+  <mode id="mode-3-extended-16bit" name="Mode 3 - Extended 16bit" channelCount="30">
+    <panTiltFine name="Pan/Tilt" pan="1" panFine="2" tilt="3" tiltFine="4" defaultPan="32768" defaultTilt="32768" />
+    <dimmer name="Position MSpeed" channel="5" default="0" />
+    <dimmer name="Control" channel="6" default="0" />
+    <dimmerFine name="Color Wheel" channel="7" fine="8" default="0" />
+    <dimmer name="Effect Rate" channel="9" default="0" />
+    <dimmer name="Frost MSpeed" channel="10" default="0" />
+    <dimmer name="Color Wheel MSpeed" channel="11" default="0" />
+    <dimmer name="Gobo Wheel MSpeed" channel="12" default="0" />
+    <dimmer name="Prism MSpeed" channel="13" default="0" />
+    <dimmer name="Zoom MSpeed" channel="14" default="0" />
+    <dimmer name="Focus MSpeed" channel="15" default="0" />
+    <dimmer name="Gobo Wheel 1" channel="16" default="0" />
+    <dimmer name="Gobo Wheel 2" channel="17" default="0" />
+    <dimmerFine name="Gobo 2 Rotation" channel="18" fine="19" default="32768" />
+    <dimmer name="Prism" channel="20" default="0" />
+    <dimmer name="Prism Rotation" channel="21" default="128" />
+    <dimmer name="Frost" channel="22" default="0" />
+    <dimmerFine name="Zoom" channel="23" fine="24" default="32768" />
+    <dimmerFine name="Focus" channel="25" fine="26" default="32896" />
+    <dimmer name="Autofocus" channel="27" default="0" />
+    <dimmer name="Shutter" channel="28" default="32" />
+    <dimmerFine name="Dimmer" channel="29" fine="30" default="0" />
+  </mode>
+
+</fixture>

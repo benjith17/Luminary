@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fixture xmlns="urn:luminary:fixture:1">
+
+  <manufacturer>Generic</manufacturer>
+  <model>RGB</model>
+  <author>Luminary</author>
+  <created>2026-08-27</created>
+
+  <mode id="3-channel" name="3 Channel" channelCount="3">
+    <color name="Color" red="1" green="2" blue="3" />
+  </mode>
+
+</fixture>

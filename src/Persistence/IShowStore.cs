@@ -1,3 +1,4 @@
+using Fixtures;
 using Model;
 
 namespace Persistence;

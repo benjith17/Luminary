@@ -91,6 +91,7 @@ public partial class MainWindow : Window
 
         CloseToolWindows();
         vm.New();
+        await ReportFixtureIssuesAsync(vm);
     }
 
     private async void OnOpenClick(object? sender, RoutedEventArgs e)
@@ -114,7 +115,20 @@ public partial class MainWindow : Window
         catch
         {
             // Invalid or unreadable file — keep the current show rather than crashing.
+            return;
         }
+
+        await ReportFixtureIssuesAsync(vm);
+    }
+
+    // A show whose fixtures could not all be resolved still loads, with those fixtures held as
+    // placeholders — so the operator has to be told, or they find out when the rig is short.
+    private async Task ReportFixtureIssuesAsync(MainWindowViewModel vm)
+    {
+        var report = new FixtureIssuesViewModel(vm.MissingFixtures, vm.LibraryIssues);
+        if (!report.HasAnything) return;
+
+        await new FixtureIssuesDialog(report).ShowDialog(this);
     }
 
     private async void OnSaveClick(object? sender, RoutedEventArgs e)

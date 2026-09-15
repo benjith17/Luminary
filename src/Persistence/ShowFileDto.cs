@@ -6,9 +6,12 @@ namespace Persistence;
 
 public sealed class ShowFileDto
 {
-    // 1: snapshot cues only. 2: adds cue Type / Chase. 3: adds Keys. Older files load unchanged —
-    // an absent type reads as a snapshot cue.
-    public int Version { get; set; } = 3;
+    // 1: snapshot cues only. 2: adds cue Type / Chase. 3: adds Keys. 4: personalities are stored as
+    // pack-qualified fixture keys rather than display names. Older files load unchanged — an absent
+    // type reads as a snapshot cue, and pre-4 personality names are mapped on load.
+    public const int CurrentVersion = 4;
+
+    public int Version { get; set; } = CurrentVersion;
     public List<UniverseDto> Universes { get; set; } = [];
     public List<FixtureDto> Fixtures { get; set; } = [];
     public CueListDto CueList { get; set; } = new();
@@ -60,7 +63,9 @@ public sealed class FixtureDto
     public Guid Id { get; set; }
     public int Number { get; set; }                         // user-facing fixture number
     public string Name { get; set; } = string.Empty;
-    public string Personality { get; set; } = string.Empty; // resolved from the FixtureLibrary
+    // Pack-qualified personality key, e.g. "builtin:robe/robin-600-ledwash/reduced-rgbw-wash-8bit".
+    // Always fully qualified: a key never resolves against a different pack than the one it names.
+    public string Personality { get; set; } = string.Empty;
     public byte Universe { get; set; }
     public int Address { get; set; }                        // 1-based DMX address
 }

@@ -1,0 +1,67 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:ViewModel"
+        x:Class="View.FixtureIssuesDialog"
+        x:DataType="vm:FixtureIssuesViewModel"
+        Icon="/Assets/icon.ico"
+        Title="Fixture Problems"
+        Width="620" Height="440"
+        MinWidth="480" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource ThemeBg0}">
+
+  <DockPanel Margin="24">
+
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0 0 0 18">
+      <TextBlock Text="{Binding Summary}" FontSize="14" FontWeight="SemiBold"
+                 TextWrapping="Wrap" Foreground="{DynamicResource ThemeText0}" />
+      <TextBlock Text="{Binding Reassurance}" FontSize="12" TextWrapping="Wrap"
+                 IsVisible="{Binding HasMissing}"
+                 Foreground="{DynamicResource ThemeText1}" />
+    </StackPanel>
+
+    <Button DockPanel.Dock="Bottom" Content="Close" Click="OnClose"
+            HorizontalAlignment="Right" Padding="16 7" FontSize="12" Margin="0 18 0 0" />
+
+    <ScrollViewer>
+      <StackPanel Spacing="18">
+
+        <ItemsControl ItemsSource="{Binding MissingPacks}" IsVisible="{Binding HasMissing}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:MissingPackGroup">
+              <StackPanel Margin="0 0 0 10">
+                <TextBlock Text="{Binding Heading}" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource ThemeText0}" Margin="0 0 0 6" />
+                <ItemsControl ItemsSource="{Binding Fixtures}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                      <TextBlock Text="{Binding}" FontSize="11" FontFamily="monospace"
+                                 TextWrapping="Wrap" Margin="10 1"
+                                 Foreground="{DynamicResource ThemeText1}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel IsVisible="{Binding HasIssues}">
+          <TextBlock Text="LIBRARY LOADING" FontSize="10" FontWeight="Bold"
+                     Foreground="{DynamicResource ThemeText2}" Margin="0 0 0 8" />
+          <ItemsControl ItemsSource="{Binding Issues}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Text="{Binding}" FontSize="11" FontFamily="monospace"
+                           TextWrapping="Wrap" Margin="0 2"
+                           Foreground="{DynamicResource ThemeText1}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+
+  </DockPanel>
+</Window>

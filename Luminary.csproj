@@ -25,4 +25,11 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The built-in fixture library, plus the schemas an author can validate against.
+         Shipped as loose files rather than embedded resources so "copy one and edit it"
+         is how someone writes their first fixture. -->
+    <Content Include="Fixtures/**/*.xml;Fixtures/**/*.xsd" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  Manifest schema for a Luminary fixture library — DRAFT, for review.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:luminary:pack:1"
+           targetNamespace="urn:luminary:pack:1"
+           elementFormDefault="qualified">
+
+  <xs:element name="pack">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name"    type="xs:string" />
+        <xs:element name="version" type="xs:positiveInteger" />
+        <xs:element name="author"  type="xs:string" minOccurs="0" />
+        <xs:element name="created" type="xs:date"   minOccurs="0" />
+        <!-- Plug-in capability namespaces required by fixtures in this library. -->
+        <xs:element name="requires" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="plugin" type="xs:anyURI" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <!-- Prefixes every fixture key this library provides. Two installed
+           libraries declaring the same id is a hard error naming both paths. -->
+      <xs:attribute name="id" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:pattern value="[a-z0-9]+(-[a-z0-9]+)*" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
