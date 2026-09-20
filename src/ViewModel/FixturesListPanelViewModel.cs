@@ -28,6 +28,9 @@ public partial class FixturesListPanelViewModel : ViewModelBase
             showService.Universes.Select(u => u.Number));
 
         SelectedUniverse = Universes.FirstOrDefault();
+
+        // The panel is rebuilt whenever a show is loaded, so this covers the loaded patch too.
+        showService.RefreshBlackoutMask();
     }
 
     public ObservableCollection<FixtureListItemViewModel> Fixtures { get; }
@@ -129,11 +132,13 @@ public partial class FixturesListPanelViewModel : ViewModelBase
     }
 
     // Clears every universe and re-emits all fixtures' current output, so re-addressing or
-    // removing a fixture never leaves stale channels driving hardware.
+    // removing a fixture never leaves stale channels driving hardware. Blackout is keyed off the
+    // same channel assignment, so its mask is rebuilt from the same trigger.
     private void RefreshOutput()
     {
         foreach (var universe in _showService.Universes) universe.Clear();
         foreach (var fixture in Fixtures) fixture.PushOutput();
+        _showService.RefreshBlackoutMask();
     }
 
     // Places a new fixture directly after the highest channel currently used in its universe.

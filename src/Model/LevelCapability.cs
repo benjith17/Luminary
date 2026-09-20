@@ -11,6 +11,12 @@ namespace Model;
 public class LevelCapability(string name, int offset, byte defaultValue = 0)
     : FixtureCapability(name, offset, defaultValue)
 {
+    // A level is whatever the personality says it is, so the family it was declared in decides:
+    // one grouped under <intensity> is a second dimmer and goes dark, while a shutter, a control
+    // channel or a colour wheel holds. A file overrides either way with blackout="zero"/"hold".
+    public override BlackoutBehavior DefaultBlackout =>
+        Family == CapabilityFamily.Intensity ? BlackoutBehavior.Zero : BlackoutBehavior.Hold;
+
     public override string MacroName => Name;
     public override IReadOnlyList<string> MacroParameters { get; } = ["Level"];
 }
@@ -23,6 +29,9 @@ public class LevelFineCapability(string name, int offset, int fineOffset, ushort
     public ushort DefaultFine { get; } = defaultValue;
 
     public override IEnumerable<int> Channels => [Offset, FineOffset];
+
+    public override BlackoutBehavior DefaultBlackout =>
+        Family == CapabilityFamily.Intensity ? BlackoutBehavior.Zero : BlackoutBehavior.Hold;
 
     public override string MacroName => Name;
     public override IReadOnlyList<string> MacroParameters { get; } = ["Level"];

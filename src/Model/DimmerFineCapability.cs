@@ -8,6 +8,8 @@ public class DimmerFineCapability(string name, int offset, int fineOffset, ushor
 
     public override IEnumerable<int> Channels => [Offset, FineOffset];
 
+    public override BlackoutBehavior DefaultBlackout => BlackoutBehavior.Zero;
+
     public override string MacroName => "Dimmer";
     public override IReadOnlyList<string> MacroParameters { get; } = ["Level"];
 }

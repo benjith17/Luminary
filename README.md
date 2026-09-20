@@ -21,7 +21,7 @@ A desktop lighting control application for theatrical and live event lighting. L
 - Per-property fade behaviour: parameters fade or snap during a crossfade, attributed on the capability
 - HTP/LTP merging: manual (fader) and playback (cue) layers combine into the DMX output per property — Highest- or Latest-Takes-Precedence — with the live cue value shown as an indicator on each fader and pad
 - Macro scripting: a small, line-oriented DSL for firing cues and setting fixtures, edited and run from a **Macros** window — with `wait`/`fade` timing, fixture ranges, `repeat` loops, live diagnostics, and Run/Stop (see [Macro scripting](#macro-scripting))
-- Blackout: a live output kill that transmits zeros while leaving the underlying look intact, so releasing it instantly restores the stage
+- Blackout: a live intensity kill that zeros only the channels a personality declares as going dark — intensity and colour by default, overridable per capability with `blackout="zero"`/`"hold"` — so position, zoom, control and lamp channels keep transmitting and the rig neither homes nor resets. The underlying look is untouched, so releasing it instantly restores the stage
 - Show files: JSON save/load (`.lum`) behind a `ShowStore` abstraction — New / Open / Save / Save As, stable fixture IDs, saved macros, and unsaved-changes prompts on new / open / quit
 - Configurable keyboard shortcuts — GO, cue navigation, blackout, open Patch, fullscreen, close window — stored in a machine-local settings file, with cross-platform Cmd/Ctrl handling
 - App icon and a startup splash screen

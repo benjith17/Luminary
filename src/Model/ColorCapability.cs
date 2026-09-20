@@ -13,6 +13,11 @@ public class ColorCapability(
 
     public override IEnumerable<int> Channels => [Offset, GreenOffset, BlueOffset];
 
+    // Killed alongside the dimmer rather than instead of it: a fixture may have no dimmer at all,
+    // or a virtual one that never quite reaches zero, and since blackout only masks the transmitted
+    // frame the colour comes straight back on release.
+    public override BlackoutBehavior DefaultBlackout => BlackoutBehavior.Zero;
+
     public override string MacroName => "Color";
     public override IReadOnlyList<string> MacroParameters { get; } = ["R", "G", "B"];
 }

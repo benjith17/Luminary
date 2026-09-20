@@ -59,6 +59,17 @@ public readonly struct CapabilityReader(XElement element, string source)
         };
     }
 
+    public BlackoutBehavior? Blackout()
+    {
+        if (element.Attribute("blackout")?.Value is not { } raw) return null;
+        return raw.ToLowerInvariant() switch
+        {
+            "zero" => BlackoutBehavior.Zero,
+            "hold" => BlackoutBehavior.Hold,
+            _ => throw Error($"'blackout' must be zero or hold, but was '{raw}'")
+        };
+    }
+
     private string Required(string attribute) =>
         element.Attribute(attribute)?.Value
         ?? throw Error($"<{element.Name.LocalName}> is missing the required '{attribute}' attribute");

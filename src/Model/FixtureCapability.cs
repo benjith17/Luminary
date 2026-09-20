@@ -28,6 +28,20 @@ public abstract class FixtureCapability(string name, int offset, byte defaultVal
     /// <summary>The fade behaviour for this capability type, used when the file does not say.</summary>
     public virtual FadeBehavior DefaultFade => FadeBehavior.Fade;
 
+    // What happens to this property while blackout is engaged. The capability type supplies the
+    // default — intensity and colour go dark, everything else holds its live value — and a fixture
+    // file may override it per capability with blackout="zero"/"hold", which is how a shutter is
+    // told to close or a lamp-control channel is told to stay exactly where it is.
+    private BlackoutBehavior? _blackout;
+    public BlackoutBehavior Blackout
+    {
+        get => _blackout ?? DefaultBlackout;
+        set => _blackout = value;
+    }
+
+    /// <summary>The blackout behaviour for this capability type, used when the file does not say.</summary>
+    public virtual BlackoutBehavior DefaultBlackout => BlackoutBehavior.Hold;
+
     // Every DMX channel this capability occupies, as 0-based offsets. Used to check a personality
     // fits its declared footprint and that no two capabilities fight over a channel. Multi-channel
     // capabilities must override; the default covers the single-channel case.

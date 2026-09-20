@@ -160,6 +160,8 @@ public static class FixtureXml
         capability.Family = family;
         capability.Primary = reader.Bool("primary");
         if (reader.Fade() is { } fade) capability.Fade = fade;
+        // After Family is set: a level's default blackout depends on the family it was declared in.
+        if (reader.Blackout() is { } blackout) capability.Blackout = blackout;
         return capability;
     }
 

@@ -11,7 +11,7 @@ public sealed class ArtNetService : IDisposable
     private readonly Dictionary<byte, V4Buffer> _v4 = [];        // Art-Net 4 per-universe frame buffer
     private ArtNet4Controller? _v4Controller;                    // shared v4 discovery/unicast subsystem
     private readonly System.Timers.Timer _timer;
-    private static readonly byte[] Zeros = new byte[512]; // sent in place of channel data during blackout
+    private readonly Dictionary<byte, byte[]> _blackoutFrames = []; // reused masked frames, one per universe
 
     public ArtNetService(ShowService showService)
     {
@@ -33,8 +33,11 @@ public sealed class ArtNetService : IDisposable
 
         foreach (var universe in universes)
         {
-            // During blackout, transmit zeros instead of the live channels (state is untouched).
-            var channels = _showService.Blackout ? Zeros : universe.Channels;
+            // Blackout zeros only the channels the patch says go dark — intensity and colour —
+            // and leaves position, zoom, control and lamp channels transmitting their live values,
+            // so killing the rig does not home the moving heads or reset anything. Either way the
+            // console's own state is untouched, so releasing it restores the look instantly.
+            var channels = _showService.Blackout ? BlackoutFrame(universe) : universe.Channels;
 
             switch (universe.Output)
             {
@@ -92,6 +95,8 @@ public sealed class ArtNetService : IDisposable
             DropSender(number);
         foreach (var number in _v4.Keys.Where(n => !live.Contains(n)).ToList())
             DropV4(number);
+        foreach (var number in _blackoutFrames.Keys.Where(n => !live.Contains(n)).ToList())
+            _blackoutFrames.Remove(number);
 
         // No universe needs discovery anymore — release the socket bound to port 6454.
         if (_v4.Count == 0 && _v4Controller is { } controller)
@@ -104,6 +109,24 @@ public sealed class ArtNetService : IDisposable
         _v4Controller?.SetLocalUniverses([.. universes
             .Select(u => u.Output).OfType<ArtNet4Output>()
             .Select(o => o.ArtNetUniverse)]);
+    }
+
+    // The frame to send for a universe during blackout: its live channels, with the masked ones
+    // zeroed. The buffer is kept per universe and overwritten in place, so a blackout allocates
+    // nothing at 40fps.
+    private byte[] BlackoutFrame(Universe universe)
+    {
+        if (!_blackoutFrames.TryGetValue(universe.Number, out var frame))
+            _blackoutFrames[universe.Number] = frame = new byte[512];
+
+        Array.Copy(universe.Channels, frame, 512);
+
+        if (_showService.BlackoutMasks.TryGetValue(universe.Number, out var mask))
+            for (var channel = 0; channel < 512; channel++)
+                if (mask[channel])
+                    frame[channel] = 0;
+
+        return frame;
     }
 
     private void DropSender(byte number)
